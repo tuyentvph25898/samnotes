@@ -17,7 +17,7 @@ public class ModelPostImageNote {
 
     private String duaAt;
 
-    @SerializedName("data")
+    @SerializedName("content")
 
     private String data;
 
@@ -27,10 +27,10 @@ public class ModelPostImageNote {
     @SerializedName("pinned")
 
     private boolean pinned;
-    @SerializedName("remindAt")
+    @SerializedName("remind")
 
     private String reminAt;
-    @SerializedName("share")
+    @SerializedName("linkNoteShare")
     private String share;
     @SerializedName("metaData")
     private String metaData;

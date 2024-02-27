@@ -528,7 +528,7 @@ public class CreateNotePublicActivity extends AppCompatActivity {
                 .addFormDataPart("image", base64String)
                 .build();
         Request request = new Request.Builder()
-                .url("https://api.imgbb.com/1/upload")
+                .url("https://samnote.mangasocial.online/1/upload")
                 .post(requestBody)
                 .build();
         String imageUrl = "";

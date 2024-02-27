@@ -43,6 +43,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.cloud_note.R;
 import com.thinkdiffai.cloud_note.APIs.APINote;
 import com.thinkdiffai.cloud_note.DAO.Login;
@@ -160,7 +161,8 @@ public class NoteImageActivity extends AppCompatActivity {
                 obj.setShare("");
                 obj.setDuaAt("");
                 obj.setReminAt("");
-                if (imageBase64 != "") {
+
+                if (!imageBase64.equals("")) {
 
                     @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, String> async = new AsyncTask<Void, Void, String>() {
                         @Override
@@ -220,7 +222,7 @@ public class NoteImageActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
-                        Log.e("TAG", "onError: " + e.getMessage());
+                        Log.e("TAGjhjhjhjhjhjhjh", "onError: " + e.getMessage());
                     }
 
                     @Override
@@ -246,7 +248,7 @@ public class NoteImageActivity extends AppCompatActivity {
                 .addFormDataPart("image", base64String)
                 .build();
         Request request = new Request.Builder()
-                .url("https://api.imgbb.com/1/upload")
+                .url("https://samnote.mangasocial.online/1/upload")
                 .post(requestBody)
                 .build();
         String imageUrl = "";
@@ -262,8 +264,10 @@ public class NoteImageActivity extends AppCompatActivity {
 
 
         } catch (IOException | JSONException e) {
+            Log.e("img: ", e+"");
             e.printStackTrace();
         }
+
         return imageUrl;
 
     }
@@ -314,6 +318,7 @@ public class NoteImageActivity extends AppCompatActivity {
                     Uri uri = data.getData();
                     Log.e("TAG", "onActivityResult: Ảnh từ thư viện " + data.getData());
                     try {
+                        Glide.with(NoteImageActivity.this).load(uri).into(imgBackground);
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);

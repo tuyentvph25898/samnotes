@@ -94,7 +94,8 @@ public interface APINote {
             "Content-type: Application/json"
     })
     Observable<ModelReturn> post_Check_list(@Path("id") int id, @Body ModelTextNoteCheckListPost modelTextNoteCheckList);
-    @POST("notes/{id}")
+
+    @POST("new-note/{id}")
     @Headers({
             "Content-type: Application/json"
     })
