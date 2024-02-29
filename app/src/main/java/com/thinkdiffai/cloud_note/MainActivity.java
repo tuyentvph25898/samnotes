@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         btn_image_note.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, NoteImageActivity.class);
+                Intent intent = new Intent(MainActivity.this, NoteImageActivity1.class);
                 startActivity(intent);
                 dialog.dismiss();
             }

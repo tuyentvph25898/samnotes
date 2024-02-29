@@ -11,6 +11,7 @@ import com.thinkdiffai.cloud_note.Model.GET.ModelGetCheckList;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetNoteText;
 import com.thinkdiffai.cloud_note.Model.GET.ModelReturn;
 import com.thinkdiffai.cloud_note.Model.POST.ModelPostImageNote;
+import com.thinkdiffai.cloud_note.Model.POST.ModelPostImageNote1;
 import com.thinkdiffai.cloud_note.Model.POST.ModelPostScreenShot;
 import com.thinkdiffai.cloud_note.Model.POST.ModelTextNoteCheckListPost;
 import com.thinkdiffai.cloud_note.Model.POST.ModelTextNotePost;
@@ -25,7 +26,9 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Observable;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -35,8 +38,10 @@ import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 
 public interface APINote {
@@ -58,6 +63,24 @@ public interface APINote {
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
             .client(okbilder.build())
             .build().create(APINote.class);
+
+    APINote apiSV = new Retrofit.Builder().
+            baseUrl("https://samnote.mangasocial.online/")
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+            .create(APINote.class);
+    @Multipart
+    @POST("new-note/{id}")
+    Call<ModelPostImageNote1> postImageNote(@Path("id") int id,
+                                            @Part("type")RequestBody type,
+                                            @Part("title")RequestBody title,
+                                            @Part("content")RequestBody content,
+                                            @Part("r")RequestBody r,
+                                            @Part("g")RequestBody g,
+                                            @Part("b")RequestBody b,
+                                            @Part("a")RequestBody a,
+                                            @Part MultipartBody.Part image_note,
+                                            @Part("remind")RequestBody remind);
 
 
     @POST("login")

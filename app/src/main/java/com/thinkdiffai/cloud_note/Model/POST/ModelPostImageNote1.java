@@ -13,11 +13,49 @@ public class ModelPostImageNote1 {
     @SerializedName("content")
     private String content;
     @SerializedName("image_note")
-    private MultipartBody image_note;
-    @SerializedName("color")
-    private Color color;
+    private String image_note;
+    @SerializedName("r")
+    private int r;
+    @SerializedName("g")
+    private int g;
+    @SerializedName("b")
+    private int b;
+    @SerializedName("a")
+    private int a;
     @SerializedName("remind")
     private String remind;
+
+    public int getR() {
+        return r;
+    }
+
+    public void setR(int r) {
+        this.r = r;
+    }
+
+    public int getG() {
+        return g;
+    }
+
+    public void setG(int g) {
+        this.g = g;
+    }
+
+    public int getB() {
+        return b;
+    }
+
+    public void setB(int b) {
+        this.b = b;
+    }
+
+    public int getA() {
+        return a;
+    }
+
+    public void setA(int a) {
+        this.a = a;
+    }
 
     public ModelPostImageNote1() {
     }
@@ -46,21 +84,14 @@ public class ModelPostImageNote1 {
         this.content = content;
     }
 
-    public MultipartBody getImage_note() {
+    public String getImage_note() {
         return image_note;
     }
 
-    public void setImage_note(MultipartBody image_note) {
+    public void setImage_note(String image_note) {
         this.image_note = image_note;
     }
 
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
 
     public String getRemind() {
         return remind;

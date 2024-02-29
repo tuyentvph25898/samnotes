@@ -57,7 +57,7 @@
             android:name="com.thinkdiffai.cloud_note.Detail_Note_ImageActivity"
             android:exported="false" />
         <activity
-            android:name="com.thinkdiffai.cloud_note.NoteImageActivity"
+            android:name="com.thinkdiffai.cloud_note.NoteImageActivity1"
             android:exported="false" />
         <activity
             android:name="com.thinkdiffai.cloud_note.SignUpActivity"

@@ -31,6 +31,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -40,6 +41,7 @@ import com.example.cloud_note.R;
 import com.thinkdiffai.cloud_note.APIs.APINote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetImageNote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetScreenShots;
+import com.thinkdiffai.cloud_note.Model.GET.ModelReturn;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -91,7 +93,7 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         imgTimeCreate = (ImageView) findViewById(R.id.img_timeCreate);
         addContentText = (EditText) findViewById(R.id.add_content_text);
         menuTextNote = (ImageButton) findViewById(R.id.menu_text_note);
-        btnDone.setVisibility(View.INVISIBLE);
+        btnDone.setVisibility(View.VISIBLE);
         btnUpload.setVisibility(View.INVISIBLE);
         isloading = new KProgressHUD(Detail_Note_ImageActivity.this)
                 .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
@@ -122,7 +124,7 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
                 }
             }
         });
-        menuTextNote.setVisibility(View.INVISIBLE);
+        menuTextNote.setVisibility(View.VISIBLE);
         menuTextNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -294,6 +296,12 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
             dialog.setCancelable(false);
         }
         //Ánh xạ
+        RelativeLayout Rl_reminder,Rl_share,Rl_lock,Rl_archive,Rl_deletenote;
+        Rl_reminder = dialog.findViewById(R.id.Rl_Reminder);
+        Rl_share = dialog.findViewById(R.id.Rl_share);
+        Rl_lock = dialog.findViewById(R.id.Rl_lock);
+        Rl_archive = dialog.findViewById(R.id.Rl_archive);
+        Rl_deletenote = dialog.findViewById(R.id.Rl_deletenote);
         ImageButton red = dialog.findViewById(R.id.color_red);
         ImageButton orange = dialog.findViewById(R.id.color_orange);
         ImageButton yellow = dialog.findViewById(R.id.color_yellow);
@@ -374,6 +382,12 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
                 dialog.cancel();
             }
         });
+        Rl_deletenote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogDelete(idNote);
+            }
+        });
         dialog.show();
     }
     public com.thinkdiffai.cloud_note.Model.Color chuyenMau(String hexColor) {
@@ -401,5 +415,68 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         String hex = "#" + redHex + greenHex + blueHex;
         Log.d("TAG", "ChuyenMau: " + hex);
         return hex;
+    }
+    private void dialogDelete( int id) {
+        final Dialog dialog1 = new Dialog(this);
+        dialog1.setContentView(R.layout.dialog_delete_note);
+        Button btn_cancel = dialog1.findViewById(R.id.btn_cancel);
+        Button btn_delete = dialog1.findViewById(R.id.btn_delete);
+        Button btn_move_trash = dialog1.findViewById(R.id.btn_move_trash);
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog1.dismiss();
+            }
+        });
+        btn_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                APINote.apiService.deleteNote(id).enqueue(new Callback<ModelReturn>() {
+                    @Override
+                    public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
+                        if (response.isSuccessful() & response.body() != null) {
+                            ModelReturn r = response.body();
+                            if (r.getStatus() == 200) {
+                                Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
+                                dialog1.dismiss();
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ModelReturn> call, Throwable t) {
+                        Log.e("TAG", "onFailure: " + t.getMessage());
+                    }
+                });
+                onBackPressed();
+            }
+        });
+        btn_move_trash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                APINote.apiService.moveToTrash(id).enqueue(new Callback<ModelReturn>() {
+                    @Override
+                    public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
+                        if (response.isSuccessful() & response.body() != null) {
+                            ModelReturn r = response.body();
+                            if (r.getStatus() == 200) {
+                                Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
+                                dialog1.dismiss();
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ModelReturn> call, Throwable t) {
+                        Log.e("TAG", "onFailure: " + t.getMessage());
+                    }
+                });
+                onBackPressed();
+            }
+
+        });
+        dialog1.show();
     }
 }
