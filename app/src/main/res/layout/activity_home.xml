@@ -163,6 +163,7 @@
                 android:textColor="@color/black"
                 android:textSize="14dp"
                 android:textStyle="bold" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rcv_listNotePublic"
                 android:layout_width="match_parent"
@@ -170,8 +171,8 @@
                 android:layout_marginVertical="5dp"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                tools:listitem="@layout/custom_layout"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/custom_layout" />
 
 
         </LinearLayout>

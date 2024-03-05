@@ -1,9 +1,12 @@
 package com.thinkdiffai.cloud_note.APIs;
 
+import com.thinkdiffai.cloud_note.Model.GET.GroupModel;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetImageNote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetScreenShots;
+import com.thinkdiffai.cloud_note.Model.GET.ResponseGroup;
 import com.thinkdiffai.cloud_note.Model.LoginModel;
 import com.thinkdiffai.cloud_note.Model.ModelListLastUser;
+import com.thinkdiffai.cloud_note.Model.PATCH.ChangPublicNote;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutCheckList;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutTextNote;
 import com.thinkdiffai.cloud_note.Model.POST.LoginReq;
@@ -101,6 +104,8 @@ public interface APINote {
             "Content-type: Application/json"
     })
     Observable<Model_Notes> getListNoteByUser(@Path("id") int id);
+
+
     @GET("notes/{id}")
     @Headers({
             "Content-type: Application/json"
@@ -173,7 +178,7 @@ public interface APINote {
     Call<ModelReturn> postScreenShot(@Path("id") int id,@Body ModelPostScreenShot image);
     @GET("lastUser")
     Call<ModelListLastUser> getListLastUser();
-    @GET("notes_public")
+    @GET("notes/10")
     Call<Model_Notes> getNotePublic();
 
     @POST("notes/10")
@@ -191,4 +196,10 @@ public interface APINote {
             "Content-type: Application/json"
     })
     Call<ModelReturn> post_image_note_public( @Body ModelPostImageNote modelPostImageNote);
+
+    @GET("group/all/{id}")
+    Call<ResponseGroup> getAllGroup(@Path("id") int id);
+
+    @PATCH("notes_public/{id}")
+    Call<ModelReturn> changePublicNote(@Path("id") int id, @Body ChangPublicNote changPublicNote);
 }

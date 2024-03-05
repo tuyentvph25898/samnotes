@@ -80,7 +80,7 @@
                android:layout_width="0dp"
                android:layout_weight="1"
                android:textSize="14dp"
-               android:layout_marginLeft="30dp"
+               android:layout_marginLeft="20dp"
                android:textColor="@color/black"
                android:layout_height="wrap_content"
                android:id="@+id/tv_createAt"

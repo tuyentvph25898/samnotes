@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -311,7 +312,13 @@ KProgressHUD isloading;
         }else {
             dialog.setCancelable(false);
         }
+        RelativeLayout Rl_reminder,Rl_share,Rl_lock,Rl_archive,Rl_deletenote;
         //Ánh xạ
+        Rl_reminder = dialog.findViewById(R.id.Rl_Reminder);
+        Rl_share = dialog.findViewById(R.id.Rl_share);
+        Rl_lock = dialog.findViewById(R.id.Rl_lock);
+        Rl_archive = dialog.findViewById(R.id.Rl_archive);
+        Rl_deletenote = dialog.findViewById(R.id.Rl_deletenote);
         ImageButton red = dialog.findViewById(R.id.color_red);
         ImageButton orange = dialog.findViewById(R.id.color_orange);
         ImageButton yellow = dialog.findViewById(R.id.color_yellow);
@@ -321,6 +328,12 @@ KProgressHUD isloading;
         ImageButton blue = dialog.findViewById(R.id.color_blue);
         ImageButton purple = dialog.findViewById(R.id.color_purple);
         TextView tvShare = dialog.findViewById(R.id.tv_share);
+        Rl_deletenote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogDelete(idNote);
+            }
+        });
         tvShare.setOnClickListener(view->{
 
         });
@@ -389,5 +402,69 @@ KProgressHUD isloading;
             }
         });
         dialog.show();
+    }
+
+    private void dialogDelete( int id) {
+        final Dialog dialog1 = new Dialog(this);
+        dialog1.setContentView(R.layout.dialog_delete_note);
+        Button btn_cancel = dialog1.findViewById(R.id.btn_cancel);
+        Button btn_delete = dialog1.findViewById(R.id.btn_delete);
+        Button btn_move_trash = dialog1.findViewById(R.id.btn_move_trash);
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog1.dismiss();
+            }
+        });
+        btn_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                APINote.apiService.deleteNote(id).enqueue(new Callback<ModelReturn>() {
+                    @Override
+                    public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
+                        if (response.isSuccessful() & response.body() != null) {
+                            ModelReturn r = response.body();
+                            if (r.getStatus() == 200) {
+                                Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
+                                dialog1.dismiss();
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ModelReturn> call, Throwable t) {
+                        Log.e("TAG", "onFailure: " + t.getMessage());
+                    }
+                });
+                onBackPressed();
+            }
+        });
+        btn_move_trash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                APINote.apiService.moveToTrash(id).enqueue(new Callback<ModelReturn>() {
+                    @Override
+                    public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
+                        if (response.isSuccessful() & response.body() != null) {
+                            ModelReturn r = response.body();
+                            if (r.getStatus() == 200) {
+                                Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
+                                dialog1.dismiss();
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ModelReturn> call, Throwable t) {
+                        Log.e("TAG", "onFailure: " + t.getMessage());
+                    }
+                });
+                onBackPressed();
+            }
+
+        });
+        dialog1.show();
     }
 }

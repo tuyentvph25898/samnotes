@@ -105,6 +105,7 @@ public class HomeActivity extends AppCompatActivity {
                 if (response.isSuccessful() & response.body() != null) {
                     isLoading.dismiss();
                     Model_Notes obj = response.body();
+                    Log.e("TAG", "onResponse: "+obj.getList());
                     AdapterNote adapterNote = new AdapterNote(obj.getList(), true);
                     rcvListNotePublic.setAdapter(adapterNote);
                 }

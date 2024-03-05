@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/Recycler_Cardview"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -72,6 +73,7 @@
 
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/ln_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@+id/ll1"
@@ -80,13 +82,42 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:textSize="14dp"
-                android:layout_marginLeft="30dp"
+                android:layout_marginLeft="20dp"
                 android:textColor="@color/black"
                 android:layout_height="wrap_content"
                 android:id="@+id/tv_createAt"
                 android:layout_marginBottom="10dp"
                 android:text="Create: "/>
         </LinearLayout>
+<!--        <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/ln_2"-->
+<!--            >-->
+
+<!--            <ImageView-->
+<!--                android:id="@+id/img_comment"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:src="@drawable/delete"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintEnd_toStartOf="@id/img_share"-->
+<!--                android:layout_marginStart="16dp"-->
+<!--                android:layout_marginEnd="16dp"-->
+<!--                tools:ignore="MissingConstraints" />-->
+
+<!--            <ImageView-->
+<!--                android:id="@+id/img_share"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:src="@drawable/delete"-->
+<!--                app:layout_constraintStart_toEndOf="@id/img_comment"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                android:layout_marginStart="16dp"-->
+<!--                android:layout_marginEnd="16dp"-->
+<!--                tools:ignore="MissingConstraints" />-->
+<!--        </androidx.constraintlayout.widget.ConstraintLayout>-->
+
     </androidx.constraintlayout.widget.ConstraintLayout>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_note"

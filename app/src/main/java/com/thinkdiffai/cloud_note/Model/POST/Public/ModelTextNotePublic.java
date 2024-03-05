@@ -22,8 +22,18 @@ public class ModelTextNotePublic {
     private String remindAt;
     @SerializedName("pinned")
     private boolean pinned;
-    @SerializedName("share")
+    @SerializedName("linkNoteShare")
     private String share;
+    @SerializedName("idFolder")
+    private String idFolder;
+
+    public String getIdFolder() {
+        return idFolder;
+    }
+
+    public void setIdFolder(String idFolder) {
+        this.idFolder = idFolder;
+    }
 
     public String getTitile() {
         return titile;

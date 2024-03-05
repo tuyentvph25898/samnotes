@@ -3,6 +3,7 @@ package com.thinkdiffai.cloud_note;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -28,6 +29,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
@@ -63,6 +65,7 @@ public class NoteImageActivity1 extends AppCompatActivity {
     private Uri mUri;
     Login daoUser;
     Model_State_Login user;
+    private String currentPhotoPath;
 
     ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -87,6 +90,15 @@ public class NoteImageActivity1 extends AppCompatActivity {
                 }
             }
     );
+    ActivityResultLauncher<Uri> cameraLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), result -> {
+        if (result) {
+            // Khi chụp ảnh thành công, hiển thị ảnh trên ImageView
+            imgBackground.setImageURI(Uri.parse(currentPhotoPath));
+        } else {
+            // Xử lý nếu có lỗi xảy ra
+            Log.e("MainActivity", "Failed to take picture");
+        }
+    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +111,6 @@ public class NoteImageActivity1 extends AppCompatActivity {
         imgBackground = (ImageView) findViewById(R.id.img_background);
         titleName = (EditText) findViewById(R.id.title_name);
         addContentText = (EditText) findViewById(R.id.add_content_text);
-        menuTextNote = (ImageButton) findViewById(R.id.menu_text_note);
         menuTextNote = (ImageButton) findViewById(R.id.menu_text_note);
         daoUser = new Login(NoteImageActivity1.this);
         user = daoUser.getLogin();
@@ -198,6 +209,8 @@ public class NoteImageActivity1 extends AppCompatActivity {
         tv_camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                openCamera();
+                dialog.dismiss();
             }
         });
         tv_gallery.setOnClickListener(new View.OnClickListener() {
@@ -346,5 +359,38 @@ public class NoteImageActivity1 extends AppCompatActivity {
             }
         });
         dialog.show();
+    }
+    private void openCamera() {
+        // Kiểm tra quyền CAMERA
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, 1);
+                return;
+            }
+        }
+
+        // Tạo intent để mở camera và chụp ảnh
+            Uri photoUri = null;
+            try {
+                photoUri = createImageFile();
+            } catch (Exception ex) {
+                Log.e("MainActivity", "Error creating image file", ex);
+            }
+            if (photoUri != null) {
+                cameraLauncher.launch(photoUri);
+            }
+
+    }
+
+    // Tạo tệp tin ảnh tạm thời
+    private Uri createImageFile() throws Exception {
+        String fileName = "photo";
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, fileName);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        Uri imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        mUri = imageUri;
+        currentPhotoPath = imageUri.toString();
+        return imageUri;
     }
 }

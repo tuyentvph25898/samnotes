@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    tools:context=".View.Fragment_Calendar">
+    tools:context=".View.Fragment_Calendar"
+    android:background="@drawable/bg_2">
     <CalendarView
         android:id="@+id/calender"
         android:layout_width="match_parent"

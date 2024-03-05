@@ -1,5 +1,9 @@
 package com.thinkdiffai.cloud_note;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,7 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -21,6 +27,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -105,10 +112,42 @@ public class CreateNotePublicActivity extends AppCompatActivity {
     List<ModelCheckListPost> checklists = new ArrayList<>();
     AdapterCheckListPost adapterCheckListPost;
     String imageBase64 = "";
-    private final int REQUEST_IMAGE_CAPTURE = 1;
-    private final int REQUEST_IMAGE_GALLERY = 2;
-    private String currentPhotoPath = "";
     KProgressHUD hud;
+    private Uri mUri;
+    private static final int MY_REQUEST_CODE = 10;
+    private String currentPhotoPath;
+    ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    Log.e("TAG", "onActivityResult: ");
+                    if (result.getResultCode() == Activity.RESULT_OK){
+                        Intent data = result.getData();
+                        if (data == null){
+                            return;
+                        }
+                        Uri uri = data.getData();
+                        mUri = uri;
+                        try {
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            imgBackground.setImageBitmap(bitmap);
+                        }catch (IOException e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+    );
+    ActivityResultLauncher<Uri> cameraLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), result -> {
+        if (result) {
+            // Khi chụp ảnh thành công, hiển thị ảnh trên ImageView
+            imgBackground.setImageURI(Uri.parse(currentPhotoPath));
+        } else {
+            // Xử lý nếu có lỗi xảy ra
+            Log.e("MainActivity", "Failed to take picture");
+        }
+    });
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -129,6 +168,7 @@ public class CreateNotePublicActivity extends AppCompatActivity {
         titleImage = (EditText) findViewById(R.id.title_image);
         addContentImage = (EditText) findViewById(R.id.add_content_image);
         menuTextNote = (ImageButton) findViewById(R.id.menu_text_note);
+        cardView = findViewById(R.id.card_View);
 
         backFromCheckNote = (ImageButton) findViewById(R.id.back_from_check_note);
         btnChecklistDone = (ImageButton) findViewById(R.id.btn_checklist_done);
@@ -157,6 +197,7 @@ public class CreateNotePublicActivity extends AppCompatActivity {
                     text.setShare("");
                     text.setDueAt("");
                     text.setRemindAt("");
+                    text.setIdFolder("1");
                     postTextNotePublulic(text);
                     break;
                 case "checklist":
@@ -171,6 +212,7 @@ public class CreateNotePublicActivity extends AppCompatActivity {
                     checkListPublic.setPinned(false);
                     checkListPublic.setShare("");
                     checkListPublic.setData(checklists);
+                    checkListPublic.setIdFolder("1");
                     potsChecklistPublic(checkListPublic);
                     break;
                 case "image":
@@ -185,33 +227,33 @@ public class CreateNotePublicActivity extends AppCompatActivity {
                     obj.setDuaAt("");
                     obj.setReminAt("");
                     obj.setNotePublic(1);
-                    if (imageBase64 != "") {
-                        AsyncTask<Void, Void, String> async = new AsyncTask<Void, Void, String>() {
-                            @Override
-                            protected String doInBackground(Void... voids) {
-                                return img();
-                            }
-
-                            @Override
-                            protected void onPostExecute(String s) {
-                                super.onPostExecute(s);
-                                Log.e("TAG", "onPostExecute: " + s);
-                                obj.setMetaData(s);
-                                if (titleImage.getText().toString() != "" && addContentImage.getText().toString() != "") {
-                                    postImageNotePublic(obj);
-                                }
-
-                            }
-                        };
-                        async.execute();
-
-
-                    } else {
-                        obj.setMetaData("");
-                        if (titleImage.getText().toString() != "" && addContentImage.getText().toString() != "") {
-                            postImageNotePublic(obj);
-                        }
-                    }
+//                    if (imageBase64 != "") {
+//                        AsyncTask<Void, Void, String> async = new AsyncTask<Void, Void, String>() {
+//                            @Override
+//                            protected String doInBackground(Void... voids) {
+//                                return img();
+//                            }
+//
+//                            @Override
+//                            protected void onPostExecute(String s) {
+//                                super.onPostExecute(s);
+//                                Log.e("TAG", "onPostExecute: " + s);
+//                                obj.setMetaData(s);
+//                                if (titleImage.getText().toString() != "" && addContentImage.getText().toString() != "") {
+//                                    postImageNotePublic(obj);
+//                                }
+//
+//                            }
+//                        };
+//                        async.execute();
+//
+//
+//                    } else {
+//                        obj.setMetaData("");
+//                        if (titleImage.getText().toString() != "" && addContentImage.getText().toString() != "") {
+//                            postImageNotePublic(obj);
+//                        }
+//                    }
                     break;
 
             }
@@ -307,7 +349,7 @@ public class CreateNotePublicActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ModelReturn> call, Throwable t) {
                 hud.dismiss();
-                Log.e("TAG", "onFailure: " + t);
+                Log.e("TAGdsdsdsdsdsds", "onFailure: " + t);
             }
         });
     }
@@ -389,239 +431,82 @@ public class CreateNotePublicActivity extends AppCompatActivity {
         tv_camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (ActivityCompat.checkSelfPermission(CreateNotePublicActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                    requesPermisstionCamera();
-                } else {
-                    opendCamera();
-
-                }
+                openCamera();
                 dialog.dismiss();
-
-
             }
         });
         tv_gallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (ActivityCompat.checkSelfPermission(CreateNotePublicActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    requesPermisstionGallery();
-                } else {
-                    pickImage();
-
-                }
+                onClickRequestPermission();
                 dialog.dismiss();
-
-
             }
         });
         dialog.show();
-
     }
 
-    private Bitmap setPic() {
-        String filePath = currentPhotoPath.replace("/emulated/0/", "/self/primary/");
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bmOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, bmOptions);
-        bmOptions.inJustDecodeBounds = false;
-        bmOptions.inPurgeable = true;
-        Bitmap bitmap = BitmapFactory.decodeFile(filePath, bmOptions);
-        return bitmap;
-    }
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        currentPhotoPath = image.getAbsolutePath();
-        Log.e("TAG", "createImageFile: " + image);
-        Log.e("TAG", "createImageFile: " + currentPhotoPath);
-        return image;
-    }
-
-    private void scanlTextImage(String base64) {
-        hud.show();
-        byte[] decodedString = Base64.decode(base64, Base64.DEFAULT);
-        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-        InputImage inputImage = InputImage.fromBitmap(decodedByte, 0);
-        TextRecognizer textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-        Task<Text> result = textRecognizer.process(inputImage).addOnSuccessListener(new OnSuccessListener<Text>() {
-            @Override
-            public void onSuccess(Text text) {
-                StringBuilder result = new StringBuilder();
-                for (Text.TextBlock block : text.getTextBlocks()) {
-                    String blockText = block.getText();
-                    Point[] blockCornerPoint = block.getCornerPoints();
-                    Rect blockFrame = block.getBoundingBox();
-                    for (Text.Line line : block.getLines()) {
-                        String lineTExt = line.getText();
-                        Point[] lineCornerPoint = line.getCornerPoints();
-                        Rect lineRect = line.getBoundingBox();
-                        for (Text.Element element : line.getElements()) {
-                            String elementText = element.getText();
-                            result.append(elementText);
-                        }
-
-
-                    }
-
-                }
-
-                addContentImage.setText(result);
-                if (currentPhotoPath != "") {
-                    File file = new File(currentPhotoPath);
-                    if (file.exists()) {
-                        // Xóa file
-                        boolean isDeleted = file.delete();
-
-                        if (isDeleted) {
-                            hud.dismiss();
-                            System.out.println("File đã được xóa thành công.");
-                        } else {
-                            System.out.println("Không thể xóa file.");
-                        }
-                    } else {
-                        System.out.println("File không tồn tại.");
-                    }
-                } else {
-                    hud.dismiss();
-                }
-
-                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-                Log.e("TAG", "onSuccess: " + result);
-
+    private void openCamera() {
+        // Kiểm tra quyền CAMERA
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, 1);
+                return;
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(CreateNotePublicActivity.this, "Fail to detect text from image.." + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-
-    private void requesPermisstionCamera() {
-        ActivityCompat.requestPermissions(CreateNotePublicActivity.this, new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_CAPTURE);
-    }
-
-    private void requesPermisstionGallery() {
-        ActivityCompat.requestPermissions(CreateNotePublicActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_IMAGE_GALLERY);
-    }
-
-    private String img() {
-        OkHttpClient client = new OkHttpClient();
-        String base64String = imageBase64;
-        String key = "6374d7c9cfa9f0cb372098bdf76d806e";
-        String boundary = "Boundary-" + UUID.randomUUID().toString();
-        MediaType mediaType = MediaType.parse("multipart/form-data; boundary=" + boundary);
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("key", key)
-                .addFormDataPart("image", base64String)
-                .build();
-        Request request = new Request.Builder()
-                .url("https://samnote.mangasocial.online/1/upload")
-                .post(requestBody)
-                .build();
-        String imageUrl = "";
-        try {
-            // Thực hiện yêu cầu và lấy phản hồi trả về
-            okhttp3.Response response = client.newCall(request).execute();
-            String responseBody = response.body().string();
-            response.close();
-            // Trích xuất URL của hình ảnh từ phản hồi JSON của ImgBB
-            JSONObject jsonObject = new JSONObject(responseBody);
-            imageUrl = jsonObject.getJSONObject("data").getString("url");
-            // In ra URL của hình ảnh đã tải lê
-
-
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
         }
-        return imageUrl;
+
+        // Tạo intent để mở camera và chụp ảnh
+        Uri photoUri = null;
+        try {
+            photoUri = createImageFile();
+        } catch (Exception ex) {
+            Log.e("MainActivity", "Error creating image file", ex);
+        }
+        if (photoUri != null) {
+            cameraLauncher.launch(photoUri);
+        }
 
     }
 
-    private void pickImage() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_IMAGE_GALLERY);
+    // Tạo tệp tin ảnh tạm thời
+    private Uri createImageFile() throws Exception {
+        String fileName = "photo";
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, fileName);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        Uri imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        mUri = imageUri;
+        currentPhotoPath = imageUri.toString();
+        return imageUri;
     }
 
-    public void opendCamera() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the intent
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-                Log.e("TAG", "opendCamera: " + photoFile);
-            } catch (IOException ex) {
-                // Error occurred while creating the File
-                Log.e("ERROR", "opendCamera: " + ex);
-
-            }
-            // Continue only if the File was successfully created
-            if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(getApplicationContext(),
-                        "com.example.cloud_note.fileprovider",
-                        photoFile);
-
-
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-            }
+    private void onClickRequestPermission() {
+        if (Build.VERSION.SDK_INT<Build.VERSION_CODES.M){
+            openGallery();
+            return;
+        }
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED){
+            openGallery();
+        }else {
+            String [] permission = {Manifest.permission.READ_EXTERNAL_STORAGE};
+            requestPermissions(permission, MY_REQUEST_CODE);
         }
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_IMAGE_GALLERY:
-                    Uri uri = data.getData();
-                    Log.e("TAG", "onActivityResult: Ảnh từ thư viện " + data.getData());
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-                        byte[] byteArray = byteArrayOutputStream.toByteArray();
-                        imageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT);
-                        byte[] decodedString = Base64.decode(imageBase64, Base64.DEFAULT);
-                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                        imgBackground.setVisibility(View.VISIBLE);
-                        imgBackground.setImageBitmap(decodedByte);
-                        scanlTextImage(imageBase64);
-                        Log.e("TAG", "onActivityResult: Step1 Complate ");
-                    } catch (IOException e) {
-                        Log.e("TAG", "onActivityResult: " + e.getMessage());
-                    }
-                    break;
-                case REQUEST_IMAGE_CAPTURE:
-                    Bitmap bitmap = setPic();
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-                    byte[] byteArray = byteArrayOutputStream.toByteArray();
-                    imageBase64 = Base64.encodeToString(byteArray, Base64.DEFAULT);
-                    imgBackground.setVisibility(View.VISIBLE);
-                    imgBackground.setImageBitmap(bitmap);
-                    scanlTextImage(imageBase64);
-                    break;
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == MY_REQUEST_CODE){
+            if (grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                openGallery();
             }
-
-
         }
+    }
+
+    private void openGallery() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        mActivityResultLauncher.launch(Intent.createChooser(intent,"Select Picture"));
     }
 
     public void Menu_Dialog(int gravity) {

@@ -35,6 +35,7 @@ import com.example.cloud_note.R;
 import com.thinkdiffai.cloud_note.APIs.APINote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetNoteText;
 import com.thinkdiffai.cloud_note.Model.GET.ModelReturn;
+import com.thinkdiffai.cloud_note.Model.PATCH.ChangPublicNote;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutTextNote;
 
 import com.thinkdiffai.cloud_note.Model.Model_List_Note;
@@ -313,6 +314,12 @@ KProgressHUD isloading;
                 dialogDelete(idNote);
             }
         });
+        Rl_lock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                changePublicNote();
+            }
+        });
 
         red.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -379,6 +386,22 @@ KProgressHUD isloading;
             }
         });
         dialog.show();
+    }
+
+    private void changePublicNote() {
+        ChangPublicNote publicNote = new ChangPublicNote(1);
+        Call<ModelReturn> call = APINote.apiService.changePublicNote(idNote, publicNote);
+        call.enqueue(new Callback<ModelReturn>() {
+            @Override
+            public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
+                Log.e( "onResponse: ", response.body().getMessage());
+            }
+
+            @Override
+            public void onFailure(Call<ModelReturn> call, Throwable t) {
+                Log.e( "onFailure: ", t+"");
+            }
+        });
     }
 
     private void dialogDelete( int id) {

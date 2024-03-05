@@ -23,10 +23,19 @@ public class ModelCheckListPublic {
     private boolean pinned;
     @SerializedName("remindAt")
     private String reminAt;
-    @SerializedName("share")
+    @SerializedName("linkNoteShare")
     private String share;
     @SerializedName("notePublic")
     private int notePublic;
+    private String idFolder;
+
+    public String getIdFolder() {
+        return idFolder;
+    }
+
+    public void setIdFolder(String idFolder) {
+        this.idFolder = idFolder;
+    }
 
     public String getTitle() {
         return title;

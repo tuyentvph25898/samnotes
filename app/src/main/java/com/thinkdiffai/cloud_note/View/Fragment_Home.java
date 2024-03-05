@@ -155,7 +155,6 @@ public class Fragment_Home extends Fragment {
                     @Override
                     public void onComplete() {
                         isloading.dismiss();
-//                        Toast.makeText(context, "Lấy dữ liệu thành công", Toast.LENGTH_SHORT).show();
                         List<Model_List_Note> list = new ArrayList<>();
                         for (Model_List_Note x : note.getList()){
                             if(!x.getType().equalsIgnoreCase("screenshot")){
@@ -169,21 +168,21 @@ public class Fragment_Home extends Fragment {
                         buttonSortby.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-//                                List<Model_List_Note> listSort = sort(sort.getSortName(), note.getList());
-//                                Log.e("TAG", "onClick: sắp sếp theo ngày " );
-//                                adapterNote = new AdapterNote(listSort, true);
-//                                recyclerView.setAdapter(adapterNote);
+                                List<Model_List_Note> listSort = sort(sort.getSortName(), note.getList());
+                                Log.e("TAG", "onClick: sắp sếp theo ngày " );
+                                adapterNote = new AdapterNote(listSort, true);
+                                recyclerView.setAdapter(adapterNote);
 
 
-//                                if(isSort==true){
-//
-//
-//                                }else {
-//                                    isSort=true;
-//                                    Log.e("TAG", "onClick: list đầu " );
-//                                    adapterNote = new AdapterNote(note.getList(), true);
-//                                    recyclerView.setAdapter(adapterNote);
-//                                }
+                                if(isSort==true){
+
+
+                                }else {
+                                    isSort=true;
+                                    Log.e("TAG", "onClick: list đầu " );
+                                    adapterNote = new AdapterNote(note.getList(), true);
+                                    recyclerView.setAdapter(adapterNote);
+                                }
 
                             }
                         });
