@@ -1,6 +1,9 @@
 package com.thinkdiffai.cloud_note.Model.PATCH;
 
+import com.google.gson.annotations.SerializedName;
+
 public class ChangPublicNote {
+    @SerializedName("notePublic")
     private int publicNote;
 
     public ChangPublicNote(int publicNote) {

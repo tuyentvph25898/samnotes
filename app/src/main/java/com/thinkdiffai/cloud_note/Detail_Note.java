@@ -1,13 +1,18 @@
 package com.thinkdiffai.cloud_note;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -33,16 +38,25 @@ import android.widget.Toast;
 
 import com.example.cloud_note.R;
 import com.thinkdiffai.cloud_note.APIs.APINote;
+import com.thinkdiffai.cloud_note.Adapter.CommentAdapter;
+import com.thinkdiffai.cloud_note.DAO.Login;
+import com.thinkdiffai.cloud_note.Model.GET.CommentModel;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetNoteText;
 import com.thinkdiffai.cloud_note.Model.GET.ModelReturn;
+import com.thinkdiffai.cloud_note.Model.GET.ResponseComment;
+import com.thinkdiffai.cloud_note.Model.Model_State_Login;
 import com.thinkdiffai.cloud_note.Model.PATCH.ChangPublicNote;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutTextNote;
 
 import com.thinkdiffai.cloud_note.Model.Model_List_Note;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutTextNote;
+import com.thinkdiffai.cloud_note.Model.POST.CommentPostModel;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import io.github.rupinderjeet.kprogresshud.KProgressHUD;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -54,34 +68,28 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class Detail_Note extends AppCompatActivity {
+    private RecyclerView rcv_comment;
     private ImageButton back;
     private ImageButton done;
     private EditText title;
-    private EditText content;
+    private EditText content, comment;
     private ImageButton menu;
     private CardView cardView;
-
     private String color_background;
     private TextView tvDateCreate;
     private ImageView imgDateCreate;
     private TextView tvTimeCreate;
-    private ImageView imgTimeCreate;
+    private ImageView imgTimeCreate, imgSend;
     List<Model_List_Note> list;
-
-
-    //Luu tru gia tri duoc gui boi bundle
-
     int idNote;
     float colorA;
     int colorR;
     int colorG;
     int colorB;
     int notePublic;
-
-
-
-    //Database
-KProgressHUD isloading;
+    KProgressHUD isloading;
+    Login daoLogin;
+    Model_State_Login user;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -96,13 +104,19 @@ KProgressHUD isloading;
         title = findViewById(R.id.detail_title_name);
         content = findViewById(R.id.detail_content_text);
         menu = findViewById(R.id.menu_detail_text_note);
+        comment = findViewById(R.id.ed_content);
+        imgSend = findViewById(R.id.sendComment);
 
         tvDateCreate = (TextView) findViewById(R.id.tv_dateCreate);
         imgDateCreate = (ImageView) findViewById(R.id.img_dateCreate);
         tvTimeCreate = (TextView) findViewById(R.id.tv_timeCreate);
         imgTimeCreate = (ImageView) findViewById(R.id.img_timeCreate);
+        rcv_comment = findViewById(R.id.rcv_comment);
+        daoLogin = new Login(Detail_Note.this);
+        user = daoLogin.getLogin();
 
         getData(intent);
+        getComment();
 
         if(notePublic==0){
             done.setVisibility(View.VISIBLE);
@@ -123,6 +137,19 @@ KProgressHUD isloading;
                 .setAnimationSpeed(2)
                 .setDimAmount(0.5f);
 
+        imgSend.setOnClickListener(view -> {
+            Date date = new Date();
+            String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+            SimpleDateFormat sdf = new SimpleDateFormat(dateFormat, Locale.getDefault());
+            String formattedDate = sdf.format(date);
+            CommentPostModel model = new CommentPostModel();
+            model.setContent(comment.getText().toString());
+            model.setIdNote(idNote);
+            model.setIdUser(user.getIdUer());
+            model.setParent_id(0);
+            model.setSendAt(formattedDate);
+            postComment(model);
+        });
         APINote.apiService.getNoteByIdTypeText(idNote).enqueue(new Callback<ModelGetNoteText>() {
             @Override
             public void onResponse(Call<ModelGetNoteText> call, Response<ModelGetNoteText> response) {
@@ -135,42 +162,34 @@ KProgressHUD isloading;
                     content.setText(obj.getModelTextNote().getData());
                     String hex = ChuyenMau(colorA, colorR, colorG, colorB);
                     cardView.setCardBackgroundColor(Color.parseColor(hex));
-
-                    done.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                           // ModelTextNotePost update = new ModelTextNotePost();
-                            update.setData(content.getText().toString());
-                            update.setTitle(title.getText().toString());
-                            update.setType(obj.getModelTextNote().getType());
-                            if(cardView.getCardBackgroundColor().getDefaultColor()==Color.parseColor(hex)){
-                                Log.d("TAG", "onCreate:Color1: k thay đổi màu  ");
-                                update.setColor(new com.thinkdiffai.cloud_note.Model.Color(colorA, colorB, colorG, colorR));
-                            }else{
-                                Log.d("TAG", "onCreate:Color2: thay đổi màu  ");
-                                update.setColor(ChuyenMauARGB(color_background));
-                            }
-
-                            update.setLock("");
-                            update.setReminAt("");
-                            update.setPinned(0);
-                            if(tvDateCreate.getText().toString()==""&&tvTimeCreate.getText().toString()==""){
-                                if(obj.getModelTextNote().getDuaAt()==""){
-                                    update.setDuaAt("");
-                                }else{
-                                    update.setDuaAt(obj.getModelTextNote().getDuaAt());
-                                }
-                            }else{
-                                update.setDuaAt(tvDateCreate.getText().toString()+" "+tvTimeCreate.getText().toString());
-                            }
-
-                            updateNodeTextNote(update, idNote);
+                    done.setOnClickListener(view -> {
+                       // ModelTextNotePost update = new ModelTextNotePost();
+                        update.setData(content.getText().toString());
+                        update.setTitle(title.getText().toString());
+                        update.setType(obj.getModelTextNote().getType());
+                        if(cardView.getCardBackgroundColor().getDefaultColor()==Color.parseColor(hex)){
+                            Log.d("TAG", "onCreate:Color1: k thay đổi màu  ");
+                            update.setColor(new com.thinkdiffai.cloud_note.Model.Color(colorA, colorB, colorG, colorR));
+                        }else{
+                            Log.d("TAG", "onCreate:Color2: thay đổi màu  ");
+                            update.setColor(ChuyenMauARGB(color_background));
                         }
+                        update.setLock("");
+                        update.setReminAt("");
+                        update.setPinned(0);
+                        if(tvDateCreate.getText().toString()==""&&tvTimeCreate.getText().toString()==""){
+                            if(obj.getModelTextNote().getDuaAt()==""){
+                                update.setDuaAt("");
+                            }else{
+                                update.setDuaAt(obj.getModelTextNote().getDuaAt());
+                            }
+                        }else{
+                            update.setDuaAt(tvDateCreate.getText().toString()+" "+tvTimeCreate.getText().toString());
+                        }
+                        updateNodeTextNote(update, idNote);
                     });
-
                 }
             }
-
             @Override
             public void onFailure(Call<ModelGetNoteText> call, Throwable t) {
                 Log.e("TAG", "onFailure: "+t.getMessage() );
@@ -178,8 +197,45 @@ KProgressHUD isloading;
             }
         });
         Back();
-
         OpenMenu();
+    }
+
+    private void getComment() {
+        APINote.apiSV.getComment(idNote).enqueue(new Callback<ResponseComment>() {
+            @Override
+            public void onResponse(Call<ResponseComment> call, Response<ResponseComment> response) {
+                if (response.isSuccessful()){
+                    ResponseComment responseComment = response.body();
+                    if (responseComment != null){
+                        List<CommentModel> list1 = responseComment.getComments();
+                        CommentAdapter adapter = new CommentAdapter(list1);
+                        rcv_comment.setAdapter(adapter);
+                    }else {
+                        Log.e("Error", "Null comment");
+                    }
+                } else {
+                    Log.e("Error", "Response unsuccessful: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseComment> call, Throwable t) {
+                Log.e("Error", "Response unsuccessful: " + t);
+            }
+        });
+    }
+    private void postComment(CommentPostModel model){
+        APINote.apiSV.postComment(idNote, model).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                Toast.makeText(Detail_Note.this, "ok roi!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("onFailuressss: ", t+"");
+            }
+        });
     }
 
     private void getData(Intent intent){
@@ -189,8 +245,6 @@ KProgressHUD isloading;
         colorG = intent.getIntExtra("colorG", 0);
         colorB = intent.getIntExtra("colorB", 0);
         notePublic = intent.getIntExtra("notePublic",0);
-
-
     }
     private void updateNodeTextNote(ModelPutTextNote obj, int id) {
         isloading.show();
@@ -201,28 +255,22 @@ KProgressHUD isloading;
                 .subscribe(new Observer<ModelReturn>() {
                     @Override
                     public void onSubscribe(@io.reactivex.rxjava3.annotations.NonNull Disposable d) {
-
                     }
-
                     @Override
                     public void onNext(@io.reactivex.rxjava3.annotations.NonNull ModelReturn modelReturn) {
                         modelR.setMessage(modelReturn.getMessage());
                         modelR.setStatus(modelR.getStatus());
                     }
-
                     @Override
                     public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
                         Log.e("TAG", "onError: " + e.getMessage());
                     }
-
                     @Override
                     public void onComplete() {
                         isloading.dismiss();
                         Toast.makeText(Detail_Note.this, modelR.getMessage() , Toast.LENGTH_SHORT).show();
                         onBackPressed();
-
                         if (modelR.getStatus() == 200) {
-
                         }
                     }
                 });
@@ -233,7 +281,7 @@ KProgressHUD isloading;
         String redHex = Integer.toHexString((int) red);
         String greenHex = Integer.toHexString((int) green);
         String blueHex = Integer.toHexString((int) blue);
-// ghép các giá trị thập lục phân lại với nhau theo thứ tự ARGB
+        // ghép các giá trị thập lục phân lại với nhau theo thứ tự ARGB
         String hex = "#" + redHex + greenHex + blueHex;
         Log.d("TAG", "ChuyenMau: " + hex);
         return hex;
@@ -249,8 +297,6 @@ KProgressHUD isloading;
         color.setR(red);
         return color;
     }
-
-
     public void Back(){
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -272,21 +318,14 @@ KProgressHUD isloading;
         //Truyền layout cho dialog.
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.custom_select_color);
-
-        //Xác định vị trí cho dialog
-
         Window window = dialog.getWindow();
         if(window == null){
-
         }
-
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
         WindowManager.LayoutParams windowAttributes = window.getAttributes();
         windowAttributes.gravity = gravity;
         window.setAttributes(windowAttributes);
-
         if(Gravity.BOTTOM == gravity){
             dialog.setCancelable(true);
         }else {
@@ -308,95 +347,83 @@ KProgressHUD isloading;
         ImageButton blue = dialog.findViewById(R.id.color_blue);
         ImageButton purple = dialog.findViewById(R.id.color_purple);
 
-        Rl_deletenote.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialogDelete(idNote);
-            }
-        });
-        Rl_lock.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                changePublicNote();
-            }
+        Rl_share.setOnClickListener(view -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Chia sẻ");
+            final EditText editText = new EditText(this);
+            editText.setText("https://samnote.mangasocial.online/note/" + idNote);
+            builder.setView(editText);
+            builder.setPositiveButton("Copy link", (dialogInterface, i) -> {
+                String content = editText.getText().toString().trim();
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Link", content);
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(this, "Copied!", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            });
+            builder.setNegativeButton("Hủy", (dialogInterface, i) -> {
+                dialog.dismiss();
+            });
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
         });
 
-        red.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#FF7D7D";
-                cardView.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        Rl_deletenote.setOnClickListener(v -> dialogDelete(idNote));
+        Rl_lock.setOnClickListener(view -> changePublicNote());
+
+        red.setOnClickListener(view -> {
+            color_background = "#FF7D7D";
+            cardView.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        orange.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#FFBC7D";
-                cardView.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        orange.setOnClickListener(view -> {
+            color_background = "#FFBC7D";
+            cardView.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        yellow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#FAE28C";
-                cardView.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        yellow.setOnClickListener(view -> {
+            color_background = "#FAE28C";
+            cardView.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        green1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#D3EF82";
-                cardView.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        green1.setOnClickListener(view -> {
+            color_background = "#D3EF82";
+            cardView.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        green2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#A5EF82";
-                cardView.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        green2.setOnClickListener(view -> {
+            color_background = "#A5EF82";
+            cardView.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        mint.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#82EFBB";
-                cardView.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        mint.setOnClickListener(view -> {
+            color_background = "#82EFBB";
+            cardView.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        blue.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#82C8EF";
-                cardView.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        blue.setOnClickListener(view -> {
+            color_background = "#82C8EF";
+            cardView.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        purple.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#8293EF";
-                cardView.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        purple.setOnClickListener(view -> {
+            color_background = "#8293EF";
+            cardView.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
         dialog.show();
     }
 
     private void changePublicNote() {
         ChangPublicNote publicNote = new ChangPublicNote(1);
+        Log.e( "changePublicNote: ", publicNote.getPublicNote()+"");
+        Log.e( "changePublicNote: ", idNote+"");
         Call<ModelReturn> call = APINote.apiService.changePublicNote(idNote, publicNote);
         call.enqueue(new Callback<ModelReturn>() {
             @Override
             public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
                 Log.e( "onResponse: ", response.body().getMessage());
             }
-
             @Override
             public void onFailure(Call<ModelReturn> call, Throwable t) {
                 Log.e( "onFailure: ", t+"");
@@ -410,35 +437,25 @@ KProgressHUD isloading;
         Button btn_cancel = dialog1.findViewById(R.id.btn_cancel);
         Button btn_delete = dialog1.findViewById(R.id.btn_delete);
         Button btn_move_trash = dialog1.findViewById(R.id.btn_move_trash);
-        btn_cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog1.dismiss();
-            }
-        });
-        btn_delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                APINote.apiService.deleteNote(id).enqueue(new Callback<ModelReturn>() {
-                    @Override
-                    public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
-                        if (response.isSuccessful() & response.body() != null) {
-                            ModelReturn r = response.body();
-                            if (r.getStatus() == 200) {
-                                Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
-                                dialog1.dismiss();
-                            }
-
+        btn_cancel.setOnClickListener(view -> dialog1.dismiss());
+        btn_delete.setOnClickListener(view -> {
+            APINote.apiService.deleteNote(id).enqueue(new Callback<ModelReturn>() {
+                @Override
+                public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
+                    if (response.isSuccessful() & response.body() != null) {
+                        ModelReturn r = response.body();
+                        if (r.getStatus() == 200) {
+                            Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
+                            dialog1.dismiss();
                         }
                     }
-
-                    @Override
-                    public void onFailure(Call<ModelReturn> call, Throwable t) {
-                        Log.e("TAG", "onFailure: " + t.getMessage());
-                    }
-                });
-                onBackPressed();
-            }
+                }
+                @Override
+                public void onFailure(Call<ModelReturn> call, Throwable t) {
+                    Log.e("TAG", "onFailure: " + t.getMessage());
+                }
+            });
+            onBackPressed();
         });
         btn_move_trash.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -455,7 +472,6 @@ KProgressHUD isloading;
 
                         }
                     }
-
                     @Override
                     public void onFailure(Call<ModelReturn> call, Throwable t) {
                         Log.e("TAG", "onFailure: " + t.getMessage());
@@ -463,7 +479,6 @@ KProgressHUD isloading;
                 });
                 onBackPressed();
             }
-
         });
         dialog1.show();
     }

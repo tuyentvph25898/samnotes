@@ -2,6 +2,7 @@ package com.thinkdiffai.cloud_note;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
@@ -11,6 +12,9 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -42,6 +46,7 @@ import com.thinkdiffai.cloud_note.APIs.APINote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetImageNote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetScreenShots;
 import com.thinkdiffai.cloud_note.Model.GET.ModelReturn;
+import com.thinkdiffai.cloud_note.Model.PATCH.ChangPublicNote;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -107,30 +112,16 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         if(!hex.equalsIgnoreCase("#000")){
             cardViewTextnote.setCardBackgroundColor(Color.parseColor(hex+""));
         }
-
-        backFromTextNote.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onBackPressed();
-            }
-        });
-        btnUpload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(ActivityCompat.checkSelfPermission(Detail_Note_ImageActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
-                    requesPermisstion();
-                }else{
-                    pickImage();
-                }
+        backFromTextNote.setOnClickListener(view -> onBackPressed());
+        btnUpload.setOnClickListener(view -> {
+            if(ActivityCompat.checkSelfPermission(Detail_Note_ImageActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+                requesPermisstion();
+            }else{
+                pickImage();
             }
         });
         menuTextNote.setVisibility(View.VISIBLE);
-        menuTextNote.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Menu_Dialog(Gravity.BOTTOM);
-            }
-        });
+        menuTextNote.setOnClickListener(view -> Menu_Dialog(Gravity.BOTTOM));
         if(type.equalsIgnoreCase("image")){
             APINote.apiService.getNoteByIdTypeImage(idNote).enqueue(new Callback<ModelGetImageNote>() {
                 @Override
@@ -149,7 +140,6 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
                         }
                     }
                 }
-
                 @Override
                 public void onFailure(Call<ModelGetImageNote> call, Throwable t) {
                     Log.e("TAG", "onFailure: "+t.getMessage() );
@@ -167,10 +157,8 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
                         titleName.setText(item.getNotes().getTitle());
                         addContentText.setText(item.getNotes().getData());
                         Glide.with(imgBackground).load(item.getNotes().getMetaData()).into(imgBackground);
-
                     }
                 }
-
                 @Override
                 public void onFailure(Call<ModelGetScreenShots> call, Throwable t) {
                     Log.e("TAG", "onFailure: "+t.getMessage() );
@@ -178,10 +166,6 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
                 }
             });
         }
-
-
-
-
     }
     private void getData(Intent intent){
         idNote = intent.getIntExtra("id", -1);
@@ -191,15 +175,12 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         colorB = intent.getIntExtra("colorB", 0);
         type = intent.getStringExtra("type");
         notePublic= intent.getIntExtra("notePublic", 0);
-
-
     }
     private void pickImage(){
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
         startActivityForResult(Intent.createChooser(intent, "Select Picture"),999);
     }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -220,7 +201,6 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
             }
         }
     }
-
     private void requesPermisstion(){
         ActivityCompat.requestPermissions(Detail_Note_ImageActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 999);
     }
@@ -229,14 +209,11 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 999 & grantResults[0] == 0) {
-            // đồng ý
 
         } else {
-            // không đồng ý
             Toast.makeText(Detail_Note_ImageActivity.this, "Do bạn không đồng ý !!!", Toast.LENGTH_SHORT).show();
         }
     }
-
     public void dialogDate() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
@@ -254,7 +231,6 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         );
         datePickerDialog.show();
     }
-
     public void dialogTime() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
@@ -275,21 +251,15 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         //Truyền layout cho dialog.
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.custom_select_color);
-
-        //Xác định vị trí cho dialog
-
         Window window = dialog.getWindow();
         if (window == null) {
 
         }
-
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
         WindowManager.LayoutParams windowAttributes = window.getAttributes();
         windowAttributes.gravity = gravity;
         window.setAttributes(windowAttributes);
-
         if (Gravity.BOTTOM == gravity) {
             dialog.setCancelable(true);
         } else {
@@ -310,86 +280,87 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         ImageButton mint = dialog.findViewById(R.id.color_mint);
         ImageButton blue = dialog.findViewById(R.id.color_blue);
         ImageButton purple = dialog.findViewById(R.id.color_purple);
-        red.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#FF7D7D";
-
-                cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        red.setOnClickListener(view -> {
+            color_background = "#FF7D7D";
+            cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        orange.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#FFBC7D";
-
-                cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        orange.setOnClickListener(view -> {
+            color_background = "#FFBC7D";
+            cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        yellow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#FAE28C";
-
-                cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        yellow.setOnClickListener(view -> {
+            color_background = "#FAE28C";
+            cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        green1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#D3EF82";
-
-                cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        green1.setOnClickListener(view -> {
+            color_background = "#D3EF82";
+            cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        green2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#A5EF82";
-
-                cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        green2.setOnClickListener(view -> {
+            color_background = "#A5EF82";
+            cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        mint.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#82EFBB";
-
-                cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        mint.setOnClickListener(view -> {
+            color_background = "#82EFBB";
+            cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        blue.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#82C8EF";
-
-                cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        blue.setOnClickListener(view -> {
+            color_background = "#82C8EF";
+            cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        purple.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                color_background = "#8293EF";
-
-                cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
-                dialog.cancel();
-            }
+        purple.setOnClickListener(view -> {
+            color_background = "#8293EF";
+            cardViewTextnote.setCardBackgroundColor(Color.parseColor(color_background));
+            dialog.cancel();
         });
-        Rl_deletenote.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialogDelete(idNote);
-            }
+        Rl_deletenote.setOnClickListener(view -> dialogDelete(idNote));
+        Rl_share.setOnClickListener(view -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Chia sẻ");
+            final EditText editText = new EditText(this);
+            editText.setText("https://samnote.mangasocial.online/note/" + idNote);
+            builder.setView(editText);
+            builder.setPositiveButton("Copy link", (dialogInterface, i) -> {
+                String content = editText.getText().toString().trim();
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Link", content);
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(this, "Copied!", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            });
+            builder.setNegativeButton("Hủy", (dialogInterface, i) -> {
+                dialog.dismiss();
+            });
+            AlertDialog alertDialog = builder.create();
+            alertDialog.show();
         });
+        Rl_lock.setOnClickListener(view -> changePublicNote());
         dialog.show();
     }
+    private void changePublicNote() {
+        ChangPublicNote publicNote = new ChangPublicNote(1);
+        Log.e( "changePublicNote: ", publicNote.getPublicNote()+"");
+        Log.e( "changePublicNote: ", idNote+"");
+        Call<ModelReturn> call = APINote.apiService.changePublicNote(idNote, publicNote);
+        call.enqueue(new Callback<ModelReturn>() {
+            @Override
+            public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
+                onBackPressed();
+            }
+            @Override
+            public void onFailure(Call<ModelReturn> call, Throwable t) {
+                Log.e( "onFailure: ", t+"");
+            }
+        });
+    }
+
     public com.thinkdiffai.cloud_note.Model.Color chuyenMau(String hexColor) {
         Log.e("TAG", "chuyenMau: "+hexColor);
         int red = Integer.parseInt(hexColor.substring(1, 3), 16);
@@ -422,60 +393,44 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         Button btn_cancel = dialog1.findViewById(R.id.btn_cancel);
         Button btn_delete = dialog1.findViewById(R.id.btn_delete);
         Button btn_move_trash = dialog1.findViewById(R.id.btn_move_trash);
-        btn_cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog1.dismiss();
-            }
-        });
-        btn_delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                APINote.apiService.deleteNote(id).enqueue(new Callback<ModelReturn>() {
-                    @Override
-                    public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
-                        if (response.isSuccessful() & response.body() != null) {
-                            ModelReturn r = response.body();
-                            if (r.getStatus() == 200) {
-                                Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
-                                dialog1.dismiss();
-                            }
-
+        btn_cancel.setOnClickListener(view -> dialog1.dismiss());
+        btn_delete.setOnClickListener(view -> {
+            APINote.apiService.deleteNote(id).enqueue(new Callback<ModelReturn>() {
+                @Override
+                public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
+                    if (response.isSuccessful() & response.body() != null) {
+                        ModelReturn r = response.body();
+                        if (r.getStatus() == 200) {
+                            Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
+                            dialog1.dismiss();
                         }
                     }
-
-                    @Override
-                    public void onFailure(Call<ModelReturn> call, Throwable t) {
-                        Log.e("TAG", "onFailure: " + t.getMessage());
-                    }
-                });
-                onBackPressed();
-            }
+                }
+                @Override
+                public void onFailure(Call<ModelReturn> call, Throwable t) {
+                    Log.e("TAG", "onFailure: " + t.getMessage());
+                }
+            });
+            onBackPressed();
         });
-        btn_move_trash.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                APINote.apiService.moveToTrash(id).enqueue(new Callback<ModelReturn>() {
-                    @Override
-                    public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
-                        if (response.isSuccessful() & response.body() != null) {
-                            ModelReturn r = response.body();
-                            if (r.getStatus() == 200) {
-                                Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
-                                dialog1.dismiss();
-                            }
-
+        btn_move_trash.setOnClickListener(view -> {
+            APINote.apiService.moveToTrash(id).enqueue(new Callback<ModelReturn>() {
+                @Override
+                public void onResponse(Call<ModelReturn> call, Response<ModelReturn> response) {
+                    if (response.isSuccessful() & response.body() != null) {
+                        ModelReturn r = response.body();
+                        if (r.getStatus() == 200) {
+                            Toast.makeText(getApplicationContext(), r.getMessage(), Toast.LENGTH_SHORT).show();
+                            dialog1.dismiss();
                         }
                     }
-
-                    @Override
-                    public void onFailure(Call<ModelReturn> call, Throwable t) {
-                        Log.e("TAG", "onFailure: " + t.getMessage());
-                    }
-                });
-                onBackPressed();
-            }
-
+                }
+                @Override
+                public void onFailure(Call<ModelReturn> call, Throwable t) {
+                    Log.e("TAG", "onFailure: " + t.getMessage());
+                }
+            });
+            onBackPressed();
         });
         dialog1.show();
     }

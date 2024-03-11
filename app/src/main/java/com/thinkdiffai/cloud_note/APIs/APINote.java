@@ -3,12 +3,14 @@ package com.thinkdiffai.cloud_note.APIs;
 import com.thinkdiffai.cloud_note.Model.GET.GroupModel;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetImageNote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetScreenShots;
+import com.thinkdiffai.cloud_note.Model.GET.ResponseComment;
 import com.thinkdiffai.cloud_note.Model.GET.ResponseGroup;
 import com.thinkdiffai.cloud_note.Model.LoginModel;
 import com.thinkdiffai.cloud_note.Model.ModelListLastUser;
 import com.thinkdiffai.cloud_note.Model.PATCH.ChangPublicNote;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutCheckList;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutTextNote;
+import com.thinkdiffai.cloud_note.Model.POST.CommentPostModel;
 import com.thinkdiffai.cloud_note.Model.POST.LoginReq;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetCheckList;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetNoteText;
@@ -202,4 +204,11 @@ public interface APINote {
 
     @PATCH("notes_public/{id}")
     Call<ModelReturn> changePublicNote(@Path("id") int id, @Body ChangPublicNote changPublicNote);
+    @GET("notes/notes-comment/{id}")
+    Call<ResponseComment> getComment(@Path("id") int id);
+    @POST("notes/notes-comment/{id}")
+    @Headers({
+            "Content-type: Application/json"
+    })
+    Call<Void> postComment(@Path("id") int id, @Body CommentPostModel commentPostModel);
 }

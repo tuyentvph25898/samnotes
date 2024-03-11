@@ -85,28 +85,27 @@ public class MainActivity extends AppCompatActivity {
                 switch (position) {
                     case 0:
                         bottomNavigationView.getMenu().findItem(R.id.note).setChecked(true);
-                        btnAdd.setVisibility(View.VISIBLE);
+                        btnAdd.setImageResource(R.drawable.add);
                         break;
                     case 1:
                         bottomNavigationView.getMenu().findItem(R.id.calendar).setChecked(true);
-                        btnAdd.setVisibility(View.VISIBLE);
+                        btnAdd.setImageResource(R.drawable.add);
                         break;
                     case 2:
                         bottomNavigationView.getMenu().findItem(R.id.archived).setChecked(true);
-                        btnAdd.setVisibility(View.VISIBLE);
+                        btnAdd.setImageResource(R.drawable.add);
                         break;
                     case 3:
                         bottomNavigationView.getMenu().findItem(R.id.deleted).setChecked(true);
-                        btnAdd.setVisibility(View.VISIBLE);
+                        btnAdd.setImageResource(R.drawable.add);
                         break;
                     case 4:
                         bottomNavigationView.getMenu().findItem(R.id.groups).setChecked(true);
-                        btnAdd.setVisibility(View.VISIBLE);
-
+                        btnAdd.setImageResource(R.drawable.new_group);
                         break;
                     default:
                         bottomNavigationView.getMenu().findItem(R.id.note).setChecked(true);
-                        btnAdd.setVisibility(View.VISIBLE);
+                        btnAdd.setImageResource(R.drawable.add);
                         break;
                 }
             }

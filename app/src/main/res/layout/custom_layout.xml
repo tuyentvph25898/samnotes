@@ -89,41 +89,61 @@
                 android:layout_marginBottom="10dp"
                 android:text="Create: "/>
         </LinearLayout>
+<!--        <View-->
+<!--            android:layout_marginVertical="8dp"-->
+<!--            android:layout_marginHorizontal="15dp"-->
+<!--            android:id="@+id/line"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="1dp"-->
+<!--            android:background="@android:color/black"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/ln_2"/>-->
+
 <!--        <androidx.constraintlayout.widget.ConstraintLayout-->
 <!--            android:layout_width="match_parent"-->
 <!--            android:layout_height="wrap_content"-->
-<!--            app:layout_constraintTop_toBottomOf="@+id/ln_2"-->
-<!--            >-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/line">-->
+
+<!--            <androidx.constraintlayout.widget.Guideline-->
+<!--                android:id="@+id/guideline"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical"-->
+<!--                app:layout_constraintGuide_percent="0.5" />-->
 
 <!--            <ImageView-->
-<!--                android:id="@+id/img_comment"-->
+<!--                android:id="@+id/img_comment_left"-->
 <!--                android:layout_width="wrap_content"-->
 <!--                android:layout_height="30dp"-->
 <!--                android:src="@drawable/delete"-->
 <!--                app:layout_constraintStart_toStartOf="parent"-->
-<!--                app:layout_constraintEnd_toStartOf="@id/img_share"-->
+<!--                app:layout_constraintEnd_toStartOf="@id/guideline"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
 <!--                android:layout_marginStart="16dp"-->
-<!--                android:layout_marginEnd="16dp"-->
-<!--                tools:ignore="MissingConstraints" />-->
+<!--                android:layout_marginEnd="16dp" />-->
 
 <!--            <ImageView-->
-<!--                android:id="@+id/img_share"-->
+<!--                android:id="@+id/img_comment_right"-->
 <!--                android:layout_width="wrap_content"-->
 <!--                android:layout_height="30dp"-->
 <!--                android:src="@drawable/delete"-->
-<!--                app:layout_constraintStart_toEndOf="@id/img_comment"-->
+<!--                app:layout_constraintStart_toEndOf="@id/guideline"-->
 <!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
 <!--                android:layout_marginStart="16dp"-->
-<!--                android:layout_marginEnd="16dp"-->
-<!--                tools:ignore="MissingConstraints" />-->
+<!--                android:layout_marginEnd="16dp" />-->
 <!--        </androidx.constraintlayout.widget.ConstraintLayout>-->
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_note"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:paddingBottom="10dp"
+        >
 
         <TextView
             android:id="@+id/title_header"
@@ -209,7 +229,7 @@
             android:textColor="@color/black"
             android:textSize="14dp"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/content_text" />
 
         <TextView
             android:id="@+id/create_date"
@@ -224,7 +244,7 @@
             android:textColor="@color/black"
             android:textSize="14dp"
             app:layout_constraintLeft_toRightOf="@+id/Created"
-          app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@+id/content_text"/>
 
         <TextView
             android:id="@+id/Due"
@@ -239,7 +259,7 @@
             android:textColor="@color/black"
             android:textSize="14dp"
             app:layout_constraintLeft_toRightOf="@+id/create_date"
-         app:layout_constraintBottom_toBottomOf="parent"/>
+         app:layout_constraintTop_toBottomOf="@+id/content_text"/>
 
         <TextView
             android:id="@+id/due_date"
@@ -252,7 +272,52 @@
             android:textColor="@color/black"
             android:textSize="14dp"
             android:layout_marginLeft="3dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/content_text"
             app:layout_constraintLeft_toRightOf="@+id/Due" />
+<!--        <View-->
+<!--            android:layout_marginVertical="8dp"-->
+<!--            android:layout_marginHorizontal="15dp"-->
+<!--            android:id="@+id/line1"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="1dp"-->
+<!--            android:background="@android:color/black"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/Due"/>-->
+
+<!--        <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/line1">-->
+
+<!--            <androidx.constraintlayout.widget.Guideline-->
+<!--                android:id="@+id/guideline1"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical"-->
+<!--                app:layout_constraintGuide_percent="0.5" />-->
+
+<!--            <ImageView-->
+<!--                android:id="@+id/img_comment_left1"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:src="@drawable/delete"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintEnd_toStartOf="@id/guideline1"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                android:layout_marginStart="16dp"-->
+<!--                android:layout_marginEnd="16dp" />-->
+
+<!--            <ImageView-->
+<!--                android:id="@+id/img_comment_right1"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:src="@drawable/delete"-->
+<!--                app:layout_constraintStart_toEndOf="@id/guideline1"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                android:layout_marginStart="16dp"-->
+<!--                android:layout_marginEnd="16dp" />-->
+<!--        </androidx.constraintlayout.widget.ConstraintLayout>-->
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

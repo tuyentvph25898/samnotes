@@ -119,7 +119,7 @@ public class Fragment_Delete extends Fragment {
 
                     @Override
                     public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
-                        Log.e("TAGaaaa", "onError: " + e.getMessage());
+                        Log.e("TAGaaaadddddd", "onError: " + e.getMessage());
                     }
 
                     @Override
