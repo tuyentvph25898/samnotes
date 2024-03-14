@@ -54,11 +54,23 @@
                 android:layout_marginTop="25dp"
                 android:background="@color/white"
                 android:src="@drawable/button_sort_by" />
-            <androidx.recyclerview.widget.RecyclerView
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:id="@+id/recycler_View"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:listitem="@layout/custom_layout"/>
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:layout_marginLeft="10dp"-->
+<!--                android:layout_marginRight="10dp"-->
+<!--                android:id="@+id/recycler_View"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                tools:listitem="@layout/custom_layout"/>-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_margin="20dp"
+        android:id="@+id/rcv_folder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:columnWidth="100dp"
+        android:numColumns="2"
+        android:verticalSpacing="10dp"
+        android:horizontalSpacing="10dp"
+        android:stretchMode="columnWidth"
+        android:gravity="center"
+        tools:listitem="@layout/item_folder"/>
 </LinearLayout>

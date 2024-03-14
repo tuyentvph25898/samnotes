@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,16 +32,25 @@ import android.widget.Toast;
 import com.example.cloud_note.R;
 import com.thinkdiffai.cloud_note.APIs.APINote;
 import com.thinkdiffai.cloud_note.Adapter.AdapterCheckList;
+import com.thinkdiffai.cloud_note.Adapter.CommentAdapter;
+import com.thinkdiffai.cloud_note.DAO.Login;
+import com.thinkdiffai.cloud_note.Model.GET.CommentModel;
 import com.thinkdiffai.cloud_note.Model.GET.ModelCheckList;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetCheckList;
 import com.thinkdiffai.cloud_note.Model.GET.ModelReturn;
+import com.thinkdiffai.cloud_note.Model.GET.ResponseComment;
+import com.thinkdiffai.cloud_note.Model.Model_State_Login;
 import com.thinkdiffai.cloud_note.Model.PATCH.ChangPublicNote;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutCheckList;
+import com.thinkdiffai.cloud_note.Model.POST.CommentPostModel;
 import com.thinkdiffai.cloud_note.Model.POST.ModelCheckListPost;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import io.github.rupinderjeet.kprogresshud.KProgressHUD;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -53,13 +63,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class Detail_CheckNote extends AppCompatActivity {
+    private ImageView imgSend;
     private CardView cardView;
     private ImageButton back;
     private ImageButton menuDetailCheckList;
-    private EditText title;
-    private ImageButton done;
+    private EditText title, comment;
     private String color_background;
-    private RecyclerView recyclerView;
+    private RecyclerView recyclerView, rcv_comment;
     int idNote;
     float colorA;
     int colorR;
@@ -70,6 +80,8 @@ public class Detail_CheckNote extends AppCompatActivity {
     private Button btnAddCheckList;
     KProgressHUD isloading;
     List<ModelCheckListPost> checkListUpdate = new ArrayList<>();
+    Login daoLogin;
+    Model_State_Login user;
     int notePublic;
     @SuppressLint("MissingInflatedId")
     @Override
@@ -85,9 +97,15 @@ public class Detail_CheckNote extends AppCompatActivity {
         menuDetailCheckList = (ImageButton) findViewById(R.id.menu_detail_check_list);
         btnDetailChecklistDone = (ImageButton) findViewById(R.id.btn_detail_checklist_done);
         btnAddCheckList = (Button) findViewById(R.id.btn_addCheckList);
+        comment = findViewById(R.id.ed_content);
+        imgSend = findViewById(R.id.sendComment);
+        rcv_comment = findViewById(R.id.rcv_comment);
+        daoLogin = new Login(Detail_CheckNote.this);
+        user = daoLogin.getLogin();
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
         getData(intent);
+        getComment();
         if(notePublic==0){
             btnAddCheckList.setVisibility(View.VISIBLE);
             title.setEnabled(true);
@@ -109,6 +127,19 @@ public class Detail_CheckNote extends AppCompatActivity {
                 .setDimAmount(0.5f);
         menuDetailCheckList.setOnClickListener(view->{
             Menu_Dialog(Gravity.BOTTOM);
+        });
+        imgSend.setOnClickListener(view -> {
+            Date date = new Date();
+            String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+            SimpleDateFormat sdf = new SimpleDateFormat(dateFormat, Locale.getDefault());
+            String formattedDate = sdf.format(date);
+            CommentPostModel model = new CommentPostModel();
+            model.setContent(comment.getText().toString());
+            model.setIdNote(idNote);
+            model.setIdUser(user.getIdUer());
+            model.setParent_id(0);
+            model.setSendAt(formattedDate);
+            postComment(model);
         });
         APINote.apiService.getNoteByIdTypeCheckList(idNote).enqueue(new Callback<ModelGetCheckList>() {
             @Override
@@ -413,5 +444,44 @@ public class Detail_CheckNote extends AppCompatActivity {
             onBackPressed();
         });
         dialog1.show();
+    }
+    private void getComment() {
+        APINote.apiSV.getComment(idNote).enqueue(new Callback<ResponseComment>() {
+            @Override
+            public void onResponse(Call<ResponseComment> call, Response<ResponseComment> response) {
+                if (response.isSuccessful()){
+                    ResponseComment responseComment = response.body();
+                    if (responseComment != null){
+                        List<CommentModel> list1 = responseComment.getComments();
+                        CommentAdapter adapter = new CommentAdapter(list1);
+                        rcv_comment.setAdapter(adapter);
+                    }else {
+                        Log.e("Error", "Null comment");
+                    }
+                } else {
+                    Log.e("Error", "Response unsuccessful: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseComment> call, Throwable t) {
+                Log.e("Error", "Response unsuccessful: " + t);
+            }
+        });
+    }
+    private void postComment(CommentPostModel model){
+        APINote.apiSV.postComment(idNote, model).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                Toast.makeText(Detail_CheckNote.this, "ok roi!", Toast.LENGTH_SHORT).show();
+                comment.setText("");
+                getComment();
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("onFailuressss: ", t+"");
+            }
+        });
     }
 }

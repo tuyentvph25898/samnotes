@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -43,14 +44,24 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.cloud_note.R;
 import com.thinkdiffai.cloud_note.APIs.APINote;
+import com.thinkdiffai.cloud_note.Adapter.CommentAdapter;
+import com.thinkdiffai.cloud_note.DAO.Login;
+import com.thinkdiffai.cloud_note.Model.GET.CommentModel;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetImageNote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetScreenShots;
 import com.thinkdiffai.cloud_note.Model.GET.ModelReturn;
+import com.thinkdiffai.cloud_note.Model.GET.ResponseComment;
+import com.thinkdiffai.cloud_note.Model.Model_State_Login;
 import com.thinkdiffai.cloud_note.Model.PATCH.ChangPublicNote;
+import com.thinkdiffai.cloud_note.Model.POST.CommentPostModel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import io.github.rupinderjeet.kprogresshud.KProgressHUD;
 import retrofit2.Call;
@@ -62,8 +73,9 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
     private ImageButton btnDone;
     private CardView cardViewTextnote;
     private Button btnUpload;
-    private ImageView imgBackground;
-    private EditText titleName;
+    private ImageView imgBackground, imgSend;
+    private RecyclerView  rcv_comment;
+    private EditText titleName, comment;
     private TextView tvDateCreate;
     private ImageView imgDateCreate;
     private TextView tvTimeCreate;
@@ -80,6 +92,8 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
     String type;
     KProgressHUD isloading;
     int notePublic;
+    Login daoLogin;
+    Model_State_Login user;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +112,11 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         imgTimeCreate = (ImageView) findViewById(R.id.img_timeCreate);
         addContentText = (EditText) findViewById(R.id.add_content_text);
         menuTextNote = (ImageButton) findViewById(R.id.menu_text_note);
+        comment = findViewById(R.id.ed_content);
+        imgSend = findViewById(R.id.sendComment);
+        rcv_comment = findViewById(R.id.rcv_comment);
+        daoLogin = new Login(Detail_Note_ImageActivity.this);
+        user = daoLogin.getLogin();
         btnDone.setVisibility(View.VISIBLE);
         btnUpload.setVisibility(View.INVISIBLE);
         isloading = new KProgressHUD(Detail_Note_ImageActivity.this)
@@ -108,6 +127,7 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
                 .setAnimationSpeed(2)
                 .setDimAmount(0.5f);
         getData(intentData);
+        getComment();
         String hex = ChuyenMau(colorA, colorR, colorB, colorB);
         if(!hex.equalsIgnoreCase("#000")){
             cardViewTextnote.setCardBackgroundColor(Color.parseColor(hex+""));
@@ -122,6 +142,19 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
         });
         menuTextNote.setVisibility(View.VISIBLE);
         menuTextNote.setOnClickListener(view -> Menu_Dialog(Gravity.BOTTOM));
+        imgSend.setOnClickListener(view -> {
+            Date date = new Date();
+            String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+            SimpleDateFormat sdf = new SimpleDateFormat(dateFormat, Locale.getDefault());
+            String formattedDate = sdf.format(date);
+            CommentPostModel model = new CommentPostModel();
+            model.setContent(comment.getText().toString());
+            model.setIdNote(idNote);
+            model.setIdUser(user.getIdUer());
+            model.setParent_id(0);
+            model.setSendAt(formattedDate);
+            postComment(model);
+        });
         if(type.equalsIgnoreCase("image")){
             APINote.apiService.getNoteByIdTypeImage(idNote).enqueue(new Callback<ModelGetImageNote>() {
                 @Override
@@ -433,5 +466,44 @@ public class Detail_Note_ImageActivity extends AppCompatActivity {
             onBackPressed();
         });
         dialog1.show();
+    }
+    private void getComment() {
+        APINote.apiSV.getComment(idNote).enqueue(new Callback<ResponseComment>() {
+            @Override
+            public void onResponse(Call<ResponseComment> call, Response<ResponseComment> response) {
+                if (response.isSuccessful()){
+                    ResponseComment responseComment = response.body();
+                    if (responseComment != null){
+                        List<CommentModel> list1 = responseComment.getComments();
+                        CommentAdapter adapter = new CommentAdapter(list1);
+                        rcv_comment.setAdapter(adapter);
+                    }else {
+                        Log.e("Error", "Null comment");
+                    }
+                } else {
+                    Log.e("Error", "Response unsuccessful: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseComment> call, Throwable t) {
+                Log.e("Error", "Response unsuccessful: " + t);
+            }
+        });
+    }
+    private void postComment(CommentPostModel model){
+        APINote.apiSV.postComment(idNote, model).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                Toast.makeText(Detail_Note_ImageActivity.this, "ok roi!", Toast.LENGTH_SHORT).show();
+                comment.setText("");
+                getComment();
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("onFailuressss: ", t+"");
+            }
+        });
     }
 }

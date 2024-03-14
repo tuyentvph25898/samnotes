@@ -1,16 +1,20 @@
 package com.thinkdiffai.cloud_note.APIs;
 
+import com.thinkdiffai.cloud_note.Model.GET.FolderModel;
 import com.thinkdiffai.cloud_note.Model.GET.GroupModel;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetImageNote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetScreenShots;
 import com.thinkdiffai.cloud_note.Model.GET.ResponseComment;
+import com.thinkdiffai.cloud_note.Model.GET.ResponseFolder;
 import com.thinkdiffai.cloud_note.Model.GET.ResponseGroup;
+import com.thinkdiffai.cloud_note.Model.GET.ResponseMessage;
 import com.thinkdiffai.cloud_note.Model.LoginModel;
 import com.thinkdiffai.cloud_note.Model.ModelListLastUser;
 import com.thinkdiffai.cloud_note.Model.PATCH.ChangPublicNote;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutCheckList;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutTextNote;
 import com.thinkdiffai.cloud_note.Model.POST.CommentPostModel;
+import com.thinkdiffai.cloud_note.Model.POST.FolderPostModel;
 import com.thinkdiffai.cloud_note.Model.POST.LoginReq;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetCheckList;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetNoteText;
@@ -211,4 +215,15 @@ public interface APINote {
             "Content-type: Application/json"
     })
     Call<Void> postComment(@Path("id") int id, @Body CommentPostModel commentPostModel);
+
+    @GET("message/chat-unknown/idSend")
+    Call<ResponseMessage> getMessageData(@Path("idSend") int id);
+    @GET("folder/{id}")
+    Call<ResponseFolder> getFolder(@Path("id") int id);
+    @POST("folder/{id}")
+    Call<ModelReturn> postFolder(@Path("id") int id, @Body FolderPostModel model);
+    @PATCH("changefolder/{idFolder}")
+    Call<ModelReturn> patchFolder(@Path("idFolder") int idFolder, @Body FolderPostModel model);
+    @DELETE("changefolder/{idFolder}")
+    Call<ModelReturn> deleteFolder(@Path("idFolder") int idFolder);
 }

@@ -229,6 +229,8 @@ public class Detail_Note extends AppCompatActivity {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 Toast.makeText(Detail_Note.this, "ok roi!", Toast.LENGTH_SHORT).show();
+                comment.setText("");
+                getComment();
             }
 
             @Override
