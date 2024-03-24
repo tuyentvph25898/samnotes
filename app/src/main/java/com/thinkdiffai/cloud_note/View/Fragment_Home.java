@@ -28,6 +28,7 @@ import com.thinkdiffai.cloud_note.Model.Model_List_Note;
 import com.thinkdiffai.cloud_note.Model.GET.Model_Notes;
 import com.thinkdiffai.cloud_note.Model.Model_State_Login;
 import com.thinkdiffai.cloud_note.Model.Setting_Sort;
+import com.thinkdiffai.cloud_note.ProfileActivity;
 import com.thinkdiffai.cloud_note.ScreenShotActivity;
 import com.thinkdiffai.cloud_note.SettingActivity;
 
@@ -109,8 +110,10 @@ public class Fragment_Home extends Fragment {
         screenShot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(context, ScreenShotActivity.class);
-                context.startActivity(intent);
+//                Intent intent = new Intent(context, ScreenShotActivity.class);
+//                context.startActivity(intent);
+                Intent intent = new Intent(context, ProfileActivity.class);
+                startActivity(intent);
             }
         });
 

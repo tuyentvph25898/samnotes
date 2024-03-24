@@ -34,6 +34,11 @@ import com.thinkdiffai.cloud_note.services.ScreenShot;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 
+import java.net.URISyntaxException;
+
+import io.socket.client.IO;
+import io.socket.client.Socket;
+
 public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewpager2;
     private Fragment_Adapter fragment_adapter;
@@ -41,11 +46,23 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton btnAdd;
     Login daoLogin;
     Model_State_Login user;
+    private Socket mSocket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        try {
+            mSocket = IO.socket("https://samnote.mangasocial.online");
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        mSocket.on(Socket.EVENT_CONNECT, args -> {
+            Log.e( "SocketIO: ", "connected");
+        }).on("send_message", args -> {
+
+        });
+        mSocket.connect();
         bottomNavigationView = findViewById(R.id.bottombar);
         viewpager2 = findViewById(R.id.viewpager);
         btnAdd = findViewById(R.id.btn_add);

@@ -3,6 +3,7 @@ package com.thinkdiffai.cloud_note.Adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -30,7 +31,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MessageModel model = list.get(position);
-        holder.messageContent.setText(model.getContent());
+        if (model.getIdSend() == 50){
+            holder.leftChatLayout.setVisibility(View.GONE);
+            holder.rightChatLayout.setVisibility(View.VISIBLE);
+            holder.rightChatText.setText(model.getContent());
+        }else {
+            holder.rightChatLayout.setVisibility(View.GONE);
+            holder.leftChatLayout.setVisibility(View.VISIBLE);
+            holder.leftChatText.setText(model.getContent());
+        }
     }
 
     @Override
@@ -39,10 +48,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView messageContent;
+        TextView leftChatText, rightChatText;
+        LinearLayout leftChatLayout, rightChatLayout;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            messageContent = itemView.findViewById(R.id.message_content);
+            leftChatLayout = itemView.findViewById(R.id.leftChatLayout);
+            rightChatLayout = itemView.findViewById(R.id.rightChatLayout);
+            leftChatText = itemView.findViewById(R.id.leftChatText);
+            rightChatText = itemView.findViewById(R.id.rightChatText);
         }
     }
 

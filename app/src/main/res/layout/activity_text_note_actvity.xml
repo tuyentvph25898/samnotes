@@ -151,6 +151,11 @@
                 android:fontFamily="@font/roboto_medium"
                 android:hint="Add text"
                 android:textColor="@color/black" />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="test"
+                android:id="@+id/test"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

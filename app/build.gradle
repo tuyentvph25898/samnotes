@@ -62,4 +62,8 @@ dependencies {
     implementation "io.github.rupinderjeet:kprogresshud:1.0.0"
 
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+    implementation ('io.socket:socket.io-client:2.1.0') {
+        // excluding org.json which is provided by Android
+        exclude group: 'org.json', module: 'json'
+    }
 }

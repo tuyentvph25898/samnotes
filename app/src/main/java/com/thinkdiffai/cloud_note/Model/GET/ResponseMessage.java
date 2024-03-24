@@ -7,6 +7,8 @@ import java.util.List;
 public class ResponseMessage {
     @SerializedName("data")
     private List<MessageModel> messageModels;
+    @SerializedName("status")
+    private int status;
 
     public List<MessageModel> getMessageModels() {
         return messageModels;

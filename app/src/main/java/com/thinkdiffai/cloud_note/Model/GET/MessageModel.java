@@ -3,6 +3,8 @@ package com.thinkdiffai.cloud_note.Model.GET;
 import com.google.gson.annotations.SerializedName;
 
 public class MessageModel {
+    @SerializedName("id")
+    private String id;
     @SerializedName("content")
     private String content;
     @SerializedName("idReceive")
@@ -11,6 +13,14 @@ public class MessageModel {
     private int idSend;
     @SerializedName("sendAt")
     private String sendAt;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getContent() {
         return content;

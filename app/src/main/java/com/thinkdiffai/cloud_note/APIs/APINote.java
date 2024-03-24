@@ -2,12 +2,15 @@ package com.thinkdiffai.cloud_note.APIs;
 
 import com.thinkdiffai.cloud_note.Model.GET.FolderModel;
 import com.thinkdiffai.cloud_note.Model.GET.GroupModel;
+import com.thinkdiffai.cloud_note.Model.GET.MessageModel;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetImageNote;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetScreenShots;
 import com.thinkdiffai.cloud_note.Model.GET.ResponseComment;
 import com.thinkdiffai.cloud_note.Model.GET.ResponseFolder;
 import com.thinkdiffai.cloud_note.Model.GET.ResponseGroup;
 import com.thinkdiffai.cloud_note.Model.GET.ResponseMessage;
+import com.thinkdiffai.cloud_note.Model.GET.ResponseProfile;
+import com.thinkdiffai.cloud_note.Model.GET.ResponseUser;
 import com.thinkdiffai.cloud_note.Model.LoginModel;
 import com.thinkdiffai.cloud_note.Model.ModelListLastUser;
 import com.thinkdiffai.cloud_note.Model.PATCH.ChangPublicNote;
@@ -15,6 +18,7 @@ import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutCheckList;
 import com.thinkdiffai.cloud_note.Model.PATCH.ModelPutTextNote;
 import com.thinkdiffai.cloud_note.Model.POST.CommentPostModel;
 import com.thinkdiffai.cloud_note.Model.POST.FolderPostModel;
+import com.thinkdiffai.cloud_note.Model.POST.GroupPostModel;
 import com.thinkdiffai.cloud_note.Model.POST.LoginReq;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetCheckList;
 import com.thinkdiffai.cloud_note.Model.GET.ModelGetNoteText;
@@ -30,6 +34,7 @@ import com.thinkdiffai.cloud_note.Model.POST.Public.ModelTextNotePublic;
 import com.thinkdiffai.cloud_note.Model.POST.RegiterReq;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.thinkdiffai.cloud_note.Model.POST.ResponsePostMessageUK;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -216,8 +221,10 @@ public interface APINote {
     })
     Call<Void> postComment(@Path("id") int id, @Body CommentPostModel commentPostModel);
 
-    @GET("message/chat-unknown/idSend")
+    @GET("message/chat-unknown/{idSend}")
     Call<ResponseMessage> getMessageData(@Path("idSend") int id);
+    @POST("message/chat-unknown/{idReceive}")
+    Call<ResponsePostMessageUK> postMessageUK(@Path("idReceive") int id, @Body MessageModel model);
     @GET("folder/{id}")
     Call<ResponseFolder> getFolder(@Path("id") int id);
     @POST("folder/{id}")
@@ -226,4 +233,11 @@ public interface APINote {
     Call<ModelReturn> patchFolder(@Path("idFolder") int idFolder, @Body FolderPostModel model);
     @DELETE("changefolder/{idFolder}")
     Call<ModelReturn> deleteFolder(@Path("idFolder") int idFolder);
+    @GET("profile/{id}")
+    Call<ResponseProfile> getProfile(@Path("id") int id);
+    @GET("allUsers/10")
+    Call<ResponseUser> getAllUser();
+    @POST("group/create/{id}")
+    Call<Void> postGroup(@Path("id") int id, @Body GroupPostModel groupPostModel);
+
 }

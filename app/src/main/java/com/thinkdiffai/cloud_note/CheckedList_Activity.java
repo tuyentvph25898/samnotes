@@ -5,13 +5,18 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -37,9 +42,13 @@ import com.thinkdiffai.cloud_note.Model.GET.ModelReturn;
 import com.thinkdiffai.cloud_note.Model.POST.ModelTextNoteCheckListPost;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import io.github.rupinderjeet.kprogresshud.KProgressHUD;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -71,6 +80,8 @@ public class CheckedList_Activity extends AppCompatActivity {
     Login daoLogin;
     Model_State_Login user;
     KProgressHUD isloading;
+    private int selectedYear, selectedMonth, selectedDay, selectedHour, selectedMinute;
+    private int jam, menit, day1, month1, year1;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -96,6 +107,12 @@ public class CheckedList_Activity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 dialogAddCheckList(CheckedList_Activity.this);
+            }
+        });
+        imgDateCreate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogDate();
             }
         });
         back.setOnClickListener(new View.OnClickListener() {
@@ -125,7 +142,7 @@ public class CheckedList_Activity extends AppCompatActivity {
                 obj.setLock("");
                 obj.setReminAt("");
                 obj.setShare("");
-                obj.setDuaAt("");
+                obj.setDuaAt(tvDateCreate.getText().toString());
                 obj.setIdFolder("1");
                 if (obj.getTitle() != null && obj.getData() != null) {
                     postAPI(obj);
@@ -137,6 +154,8 @@ public class CheckedList_Activity extends AppCompatActivity {
                         Toast.makeText(CheckedList_Activity.this, "Content không được để trống", Toast.LENGTH_SHORT).show();
                     }
                 }
+                creatNotificationChannel();
+                setAlarm();
             }
         });
     }
@@ -157,16 +176,94 @@ public class CheckedList_Activity extends AppCompatActivity {
     }
 
 
+    private void creatNotificationChannel(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            CharSequence name = title.getText().toString();
+            String description = "checklist";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+
+            NotificationChannel channel  = new NotificationChannel("Notify", name,importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+    private void setAlarm(){
+        AlarmManager alarmManager  = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        Date date = new Date();
+
+        Calendar cal_alarm = Calendar.getInstance();
+        Calendar cal_now = Calendar.getInstance();
+
+        cal_now.setTime(date);
+        cal_alarm.setTime(date);
+
+        cal_alarm.set(Calendar.DAY_OF_MONTH, day1);
+        cal_alarm.set(Calendar.MONTH, month1);
+        cal_alarm.set(Calendar.YEAR, year1);
+        cal_alarm.set(Calendar.HOUR_OF_DAY, jam);
+        cal_alarm.set(Calendar.MINUTE, menit);
+        cal_alarm.set(Calendar.SECOND, 0);
+
+        if(cal_alarm.before(cal_now)){
+            cal_alarm.add(Calendar.DATE, 1);
+        }
+        Intent i = new Intent(CheckedList_Activity.this, AlarmReceiver.class);
+        i.putExtra("notification_title", title.getText().toString());
+        i.putExtra("notification_content", "checklist");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(CheckedList_Activity.this, 0, i, PendingIntent.FLAG_IMMUTABLE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, cal_alarm.getTimeInMillis(),pendingIntent);
+    }
+
+    //    private void cancelAlarm(){
+//        Intent intent = new Intent(this, AlarmReceiver.class);
+//        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+//        if (alarmManager == null){
+//            alarmManager  = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//        }
+//        alarmManager.cancel(pendingIntent);
+//    }
+    private void showTimePicker(){
+        TimePickerDialog timePickerDialog = new TimePickerDialog(
+                this,
+                (view, hourOfDay, minute) -> {
+                    if (hourOfDay > 12) {
+                        tvTimeCreate.setText(
+                                String.format("%02d", (hourOfDay - 12)) + " : " + String.format("%02d", minute) + " PM"
+                        );
+                    } else {
+                        tvTimeCreate.setText(hourOfDay + " : " + minute + " AM");
+                    }
+                    jam = hourOfDay;
+                    menit = minute;
+                },
+                12, // Default hour
+                0, // Default minute
+                false // 24-hour format
+        );
+
+        timePickerDialog.setTitle("Select time");
+        timePickerDialog.show();
+    }
+
+
     public void dialogDate() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         DatePickerDialog datePickerDialog = new DatePickerDialog(CheckedList_Activity.this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                int days = dayOfMonth;
-                int months = month;
-                int years = year;
-                tvDateCreate.setText(days + "/" + (months + 1) + "/" + years);
+                selectedYear = year;
+                selectedMonth = month;
+                selectedDay = dayOfMonth;
+                day1 = dayOfMonth;
+                month1 = month;
+                year1 = year;
+
+                // Gọi phương thức dialogTime() sau khi chọn ngày
+                dialogTime();
             }
         }, calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
@@ -183,12 +280,30 @@ public class CheckedList_Activity extends AppCompatActivity {
         TimePickerDialog timePickerDialog = new TimePickerDialog(CheckedList_Activity.this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                int hour = i;
-                int minute = i1;
-                tvTimeCreate.setText(hour + ":" + minute);
+                selectedHour = i;
+                selectedMinute = i1;
+                jam = i;
+                menit = i1;
+                combineAndFormatDateTime();
             }
         }, hourOfDay, minute, false);
         timePickerDialog.show();
+    }
+
+    private void combineAndFormatDateTime() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, selectedYear);
+        calendar.set(Calendar.MONTH, selectedMonth);
+        calendar.set(Calendar.DAY_OF_MONTH, selectedDay);
+        calendar.set(Calendar.HOUR_OF_DAY, selectedHour);
+        calendar.set(Calendar.MINUTE, selectedMinute);
+
+        String dateFormat = "dd/MM/yyyy hh:mm a Z";
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat, Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getDefault());
+
+        String formattedTime = sdf.format(calendar.getTime());
+        tvDateCreate.setText(formattedTime);
     }
 
     public void postAPI(ModelTextNoteCheckListPost obj) {

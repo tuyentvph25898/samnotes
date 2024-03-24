@@ -2,8 +2,15 @@ package com.thinkdiffai.cloud_note;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -19,10 +26,12 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -42,6 +51,11 @@ import com.thinkdiffai.cloud_note.Model.POST.ModelPostImageNote1;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -58,14 +72,20 @@ public class NoteImageActivity1 extends AppCompatActivity {
     private CardView cardViewTextnote;
     private Button btnUpload;
     private ImageView imgBackground;
+    private ImageView imgDateCreate;
     private EditText titleName;
     private EditText addContentText;
+    private TextView tvTimeCreate;
+    private TextView tvDateCreate;
     private ImageButton menuTextNote;
     String color_background = "#FF7D7D";
     private Uri mUri;
     Login daoUser;
     Model_State_Login user;
     private String currentPhotoPath;
+
+    private int selectedYear, selectedMonth, selectedDay, selectedHour, selectedMinute;
+    private int jam, menit, day1, month1, year1;
 
     ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -111,6 +131,9 @@ public class NoteImageActivity1 extends AppCompatActivity {
         imgBackground = (ImageView) findViewById(R.id.img_background);
         titleName = (EditText) findViewById(R.id.title_name);
         addContentText = (EditText) findViewById(R.id.add_content_text);
+        imgDateCreate = (ImageView) findViewById(R.id.img_dateCreate);
+        tvTimeCreate = (TextView) findViewById(R.id.tv_timeCreate);
+        tvDateCreate = (TextView) findViewById(R.id.tv_dateCreate);
         menuTextNote = (ImageButton) findViewById(R.id.menu_text_note);
         daoUser = new Login(NoteImageActivity1.this);
         user = daoUser.getLogin();
@@ -118,6 +141,12 @@ public class NoteImageActivity1 extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 onBackPressed();
+            }
+        });
+        imgDateCreate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogDate();
             }
         });
         btnUpload.setOnClickListener(new View.OnClickListener() {
@@ -130,10 +159,15 @@ public class NoteImageActivity1 extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (mUri != null){
+                    creatNotificationChannel();
+                    setAlarm();
                     postImagePost();
                 }
             }
         });
+
+
+
         menuTextNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -142,6 +176,135 @@ public class NoteImageActivity1 extends AppCompatActivity {
         });
     }
 
+    private void creatNotificationChannel(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            CharSequence name = titleName.getText().toString();
+            String description = addContentText.getText().toString();
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+
+            NotificationChannel channel  = new NotificationChannel("Notify", name,importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+    private void setAlarm(){
+        AlarmManager alarmManager  = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        Date date = new Date();
+
+        Calendar cal_alarm = Calendar.getInstance();
+        Calendar cal_now = Calendar.getInstance();
+
+        cal_now.setTime(date);
+        cal_alarm.setTime(date);
+
+        cal_alarm.set(Calendar.DAY_OF_MONTH, day1);
+        cal_alarm.set(Calendar.MONTH, month1);
+        cal_alarm.set(Calendar.YEAR, year1);
+        cal_alarm.set(Calendar.HOUR_OF_DAY, jam);
+        cal_alarm.set(Calendar.MINUTE, menit);
+        cal_alarm.set(Calendar.SECOND, 0);
+
+        if(cal_alarm.before(cal_now)){
+            cal_alarm.add(Calendar.DATE, 1);
+        }
+        Intent i = new Intent(NoteImageActivity1.this, AlarmReceiver.class);
+        i.putExtra("notification_title", titleName.getText().toString());
+        i.putExtra("notification_content", addContentText.getText().toString());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(NoteImageActivity1.this, 0, i, PendingIntent.FLAG_IMMUTABLE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, cal_alarm.getTimeInMillis(),pendingIntent);
+    }
+
+    //    private void cancelAlarm(){
+//        Intent intent = new Intent(this, AlarmReceiver.class);
+//        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+//        if (alarmManager == null){
+//            alarmManager  = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//        }
+//        alarmManager.cancel(pendingIntent);
+//    }
+    private void showTimePicker(){
+        TimePickerDialog timePickerDialog = new TimePickerDialog(
+                this,
+                (view, hourOfDay, minute) -> {
+                    if (hourOfDay > 12) {
+                        tvTimeCreate.setText(
+                                String.format("%02d", (hourOfDay - 12)) + " : " + String.format("%02d", minute) + " PM"
+                        );
+                    } else {
+                        tvTimeCreate.setText(hourOfDay + " : " + minute + " AM");
+                    }
+                    jam = hourOfDay;
+                    menit = minute;
+                },
+                12, // Default hour
+                0, // Default minute
+                false // 24-hour format
+        );
+
+        timePickerDialog.setTitle("Select time");
+        timePickerDialog.show();
+    }
+
+
+    public void dialogDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        DatePickerDialog datePickerDialog = new DatePickerDialog(NoteImageActivity1.this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                selectedYear = year;
+                selectedMonth = month;
+                selectedDay = dayOfMonth;
+                day1 = dayOfMonth;
+                month1 = month;
+                year1 = year;
+
+                // Gọi phương thức dialogTime() sau khi chọn ngày
+                dialogTime();
+            }
+        }, calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        datePickerDialog.show();
+    }
+
+    public void dialogTime() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        TimePickerDialog timePickerDialog = new TimePickerDialog(NoteImageActivity1.this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                selectedHour = i;
+                selectedMinute = i1;
+                jam = i;
+                menit = i1;
+                combineAndFormatDateTime();
+            }
+        }, hourOfDay, minute, false);
+        timePickerDialog.show();
+    }
+
+    private void combineAndFormatDateTime() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, selectedYear);
+        calendar.set(Calendar.MONTH, selectedMonth);
+        calendar.set(Calendar.DAY_OF_MONTH, selectedDay);
+        calendar.set(Calendar.HOUR_OF_DAY, selectedHour);
+        calendar.set(Calendar.MINUTE, selectedMinute);
+
+        String dateFormat = "dd/MM/yyyy hh:mm a Z";
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat, Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getDefault());
+
+        String formattedTime = sdf.format(calendar.getTime());
+        tvDateCreate.setText(formattedTime);
+    }
     private void postImagePost() {
         String title = titleName.getText().toString();
         String content = addContentText.getText().toString();
@@ -160,7 +323,6 @@ public class NoteImageActivity1 extends AppCompatActivity {
         RequestBody requestBodyTitle = RequestBody.create(MediaType.parse("multipart/form-data"), title);
         RequestBody requestBodyContent = RequestBody.create(MediaType.parse("multipart/form-data"), content);
         RequestBody requestBodyType = RequestBody.create(MediaType.parse("multipart/form-data"), type);
-//        RequestBody requestBodyColor = RequestBody.create(MediaType.parse("multipart/form-data"), chuyenMau(color_background).toString());
         RequestBody requestBodyRemind = RequestBody.create(MediaType.parse("multipart/form-data"), remind);
 
         String strRealPath = RealPathUtil.getRealPath(this, mUri);
